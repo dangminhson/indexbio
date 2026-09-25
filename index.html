@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Đặng Minh Sơn | Chuyên Tin K119 CVA</title>
+
+    <!-- Fonts: Fira Code for developer aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'term-bg': '#0a0a0a',
+                        'term-green': '#00ff41',
+                        'term-green-glow': '#00ff4180',
+                        'term-dim': '#008f11'
+                    },
+                    fontFamily: {
+                        'mono': ['"Fira Code"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff41;
+            font-family: 'Fira Code', monospace;
+            overflow: hidden;
+            margin: 0;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        /* CRT Scanline effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.6;
+        }
+
+        /* Glowing text effect */
+        .glow {
+            text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff4150;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #008f11;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff41;
+        }
+
+        /* Terminal Input Styling */
+        input[type="text"] {
+            background: transparent;
+            border: none;
+            color: #00ff41;
+            outline: none;
+            font-family: 'Fira Code', monospace;
+            flex-grow: 1;
+            caret-color: #00ff41;
+        }
+
+        .link-hover:hover {
+            color: #fff;
+            background-color: #008f11;
+            text-decoration: none;
+        }
+
+        /* Prevent zooming and panning on game canvas for mobile */
+        canvas {
+            touch-action: none;
+        }
+
+        /* RED ALERT & GLITCH EFFECTS */
+        .bg-red-alert {
+            background-color: #1a0000 !important;
+        }
+        .red-alert-text {
+            color: #ff003c !important;
+            text-shadow: 0 0 5px #ff003c, 0 0 10px #ff003c80 !important;
+        }
+        
+        @keyframes glitch-anim {
+            0% { transform: translate(0) }
+            20% { transform: translate(-3px, 2px) }
+            40% { transform: translate(-2px, -3px) }
+            60% { transform: translate(3px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+        .glitch-mode {
+            animation: glitch-anim 0.15s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col" id="main-body">
+    <div class="scanlines"></div>
+
+    <!-- Image Modal Overlay (Ẩn mặc định) -->
+    <div id="image-modal" class="fixed inset-0 z-[100] hidden bg-black/90 flex justify-center items-center opacity-0 transition-opacity duration-300" onclick="closeModal()">
+        <span class="absolute top-4 right-6 text-term-green text-5xl cursor-pointer hover:text-white glow transition-colors" title="Đóng ảnh">&times;</span>
+        <img id="modal-img" class="max-w-[95vw] max-h-[90vh] object-contain rounded-md border-2 border-term-dim shadow-[0_0_30px_rgba(0,143,17,0.5)]" src="" alt="Ảnh phóng to">
+    </div>
+
+    <!-- Video Modal Overlay (MỚI THÊM) -->
+    <div id="video-modal" class="fixed inset-0 z-[100] hidden bg-black/90 flex justify-center items-center opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeVideoModal()">
+        <span class="absolute top-4 right-6 text-term-green text-5xl cursor-pointer hover:text-white glow transition-colors z-[101]" title="Đóng video" onclick="closeVideoModal()">&times;</span>
+        <video id="modal-video" class="max-w-[95vw] max-h-[90vh] object-contain rounded-md border-2 border-term-dim shadow-[0_0_30px_rgba(0,143,17,0.5)] outline-none" controls playsinline>
+            <source src="" type="video/mp4">
+            Trình duyệt của bạn không hỗ trợ video.
+        </video>
+    </div>
+
+    <!-- Main Terminal Area -->
+    <main id="terminal-container" class="flex-grow p-4 md:p-8 overflow-y-auto w-full max-w-4xl mx-auto cursor-text text-sm md:text-base transition-colors duration-200">
+
+        <!-- Output History -->
+        <div id="output" class="whitespace-pre-wrap break-words leading-relaxed"></div>
+
+        <!-- Active Input Line -->
+        <div id="input-wrapper" class="flex items-center mt-2 hidden">
+            <span id="prompt-text" class="text-term-dim mr-2">son@cva-k119:~$</span>
+            <input type="text" id="cmd-input" autocomplete="off" spellcheck="false" class="text-lg w-full glow" autofocus>
+        </div>
+    </main>
+
+    <!-- Mobile Friendly Quick Access Bar -->
+    <footer class="w-full bg-[#111] border-t border-term-dim p-4 z-40 shrink-0" id="footer-bar">
+        <div class="max-w-4xl mx-auto">
+            <p class="text-xs text-term-dim mb-3 text-center uppercase tracking-widest">>> Quick Access <<</p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <a href="https://www.facebook.com/SonWei99/" target="_blank" class="flex items-center gap-2 px-4 py-2 border border-term-dim rounded-md hover:bg-term-green hover:text-black transition-colors duration-300">
+                    <i class="fab fa-facebook-f"></i> <span class="hidden sm:inline">Facebook</span>
+                </a>
+                <a href="https://www.instagram.com/sonwei2110" target="_blank" class="flex items-center gap-2 px-4 py-2 border border-term-dim rounded-md hover:bg-term-green hover:text-black transition-colors duration-300">
+                    <i class="fab fa-instagram"></i> <span class="hidden sm:inline">Instagram</span>
+                </a>
+                <a href="https://discord.com" target="_blank" title="Discord: _sonvipno1_" class="flex items-center gap-2 px-4 py-2 border border-term-dim rounded-md hover:bg-term-green hover:text-black transition-colors duration-300">
+                    <i class="fab fa-discord"></i> <span class="hidden sm:inline">Discord</span>
+                </a>
+                <a href="mailto:minhson220311@gmail.com" class="flex items-center gap-2 px-4 py-2 border border-term-dim rounded-md hover:bg-term-green hover:text-black transition-colors duration-300">
+                    <i class="fas fa-envelope"></i> <span class="hidden sm:inline">Email</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const outputDiv = document.getElementById('output');
+        const inputWrapper = document.getElementById('input-wrapper');
+        const cmdInput = document.getElementById('cmd-input');
+        const terminalContainer = document.getElementById('terminal-container');
+        const mainBody = document.getElementById('main-body');
+
+        let isSelfDestructing = false;
+
+        const userPrompt = "<span class='text-term-dim'>son@cva-k119:~$</span> ";
+
+        // ASCII Art Header
+        const asciiArt = `
+ ____ __     __   _       _  __  _  _   ___  
+/ ___|\\ \\   / /  / \\     | |/ / / |/ | / _ \\ 
+| |    \\ \\ / /  / _ \\    | ' /  | || | |(_) |
+| |___  \\ V /  / ___ \\   | . \\  | || | \\__, |
+\\____|   \\_/  /_/   \\_\\  |_|\\_\\ |_||_|   /_/ 
+
+`;
+
+        // Database Commands
+        const commands = {
+            'help': `
+AVAILABLE COMMANDS:
+  <span class="glow text-white">about</span>       - Thông tin cá nhân & châm ngôn
+  <span class="glow text-white">avatar</span>      - Hiển thị ảnh đại diện cá nhân
+  <span class="glow text-white">skills</span>      - Ngôn ngữ lập trình & kỹ năng đặc biệt
+  <span class="glow text-white">social</span>      - Danh sách các kênh liên hệ
+  <span class="glow text-white">cva</span>         - Giới thiệu về THPT Chuyên Chu Văn An
+  <span class="glow text-white">cpp</span>         - Tìm hiểu về ngôn ngữ C++
+  
+  [+] CHUYÊN MỤC GIẢI TRÍ & ẨN (EASTER EGGS):
+  <span class="glow text-cyan-400">askson [câu hỏi]</span> - Chat trực tiếp với AI giả lập của Sơn
+  <span class="glow text-white">dino</span>        - Chơi game Khủng long vượt rào (Dino Run)
+  <span class="glow text-white">ransanmoi</span>   - Chơi game Rắn săn mồi
+  <span class="glow text-white">flappybird</span>  - Chơi game Flappy Bird
+  <span class="glow text-white">code</span>        - Khởi động chuỗi số liệu tăng dần (Hacker mode)
+  <span class="glow text-white">music</span>       - Thưởng thức Bolero: Sương trắng miền quê ngoại
+  
+  <span class="glow text-white">home</span>        - Quay về màn hình chào mừng CVA K119
+  <span class="glow text-white">clear</span>       - Xóa toàn bộ nội dung màn hình
+`,
+            'avatar': `
+<div class="flex flex-col items-center my-6 w-full shrink-0">
+    <div class="relative w-52 h-52 md:w-72 md:h-72 rounded-full border-[3px] border-term-green overflow-hidden shadow-[0_0_20px_rgba(0,255,65,0.6)] mb-5 shrink-0 cursor-pointer transition-transform hover:scale-105 duration-300 group" onclick="openModal('BaotangLSQSVN.jpg')">
+        <img src="BaotangLSQSVN.jpg" alt="Đặng Minh Sơn" class="absolute top-0 left-0 w-full h-full object-cover group-hover:opacity-80 transition-opacity" style="object-position: center;">
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="fas fa-search-plus text-4xl text-white drop-shadow-lg"></i>
+        </div>
+    </div>
+    <p class="text-sm md:text-base text-term-dim text-center max-w-xl px-4 leading-relaxed glow">
+        Bức ảnh này của Sơn được chụp tại Bảo tàng Lịch sử Quân sự Việt Nam vào ngày <span class="text-white">20/09/2026</span>.
+        <br><span class="text-xs text-gray-400 mt-2 block italic">(Click vào khung ảnh để xem kích thước đầy đủ)</span>
+    </p>
+</div>
+`,
+            'about': `
+[!] INITIALIZING BIO...
+
+Xin chào! Mình là <b>Đặng Minh Sơn</b>.
+> Danh hiệu: <b>Chuyên Tin K119 CVA</b>
+> Slogan: <i>"Trời có thể giăng mây xám, nhưng tim luôn chọn hửng nắng vàng"</i>
+> Bài hát yêu thích: <b>Sương trắng miền quê ngoại</b> - Đinh Miên Vũ
+> Sở thích: Chơi cầu lông, bóng đá, cờ vua, vọc vạch sửa đồ cơ & điện tử, nghe bolero.
+`,
+            'social': `
+[+] SOCIAL LINKS:
+  * <a href="https://www.facebook.com/SonWei99/" target="_blank" class="link-hover">[Facebook]</a>  fb.com/SonWei99
+  * <a href="https://www.instagram.com/sonwei2110" target="_blank" class="link-hover">[Instagram]</a> @sonwei2110
+  * <a href="https://discord.com" target="_blank" class="link-hover">[Discord]</a>   _sonvipno1_
+  * <a href="mailto:minhson220311@gmail.com" class="link-hover">[Email]</a>     minhson220311@gmail.com
+`,
+            'skills': `
+[+] TECH STACK & SKILLS:
+  - Ngôn ngữ lập trình chủ yếu: <b>C++</b> (Competitive Programming)
+  - Chức danh đặc biệt: <b>Bộ trưởng bộ chém gió</b>
+  - Kỹ năng phần cứng: Vọc vạch & sửa chữa đồ cơ khí, thiết bị điện tử
+  - Kỹ năng giải trí: Chơi cờ vua, cầu lông, bóng đá & cảm thụ Bolero
+`,
+            'cva': `
+[🏛️] TRƯỜNG THPT CHUYÊN CHU VĂN AN (HÀ NỘI) - TRƯỜNG BƯỞI:
+> Lịch sử: Thành lập năm 1908, là một trong những ngôi trường trung học lâu đời và giàu truyền thống bậc nhất Việt Nam.
+> Địa thế: Tọa lạc tại số 10 Thụy Khuê, Tây Hồ, Hà Nội – sở hữu không gian cổ kính đậm chất Pháp ven Hồ Tây.
+> Chuyên Tin K119: Nơi hội tụ của những thuật toán sư tài năng, tràn đầy niềm đam mê với công nghệ và lập trình
+`,
+            'cpp': `
+[+] C++ (C-Plus-Plus):
+> Lịch sử: Do Bjarne Stroustrup phát triển từ năm 1979 tại Bell Labs, là bản mở rộng cực mạnh của ngôn ngữ C.
+> Sức mạnh: Kết hợp hoàn hảo giữa lập trình hướng đối tượng (OOP) và hiệu suất biên dịch cấp thấp siêu tốc độ.
+> Ứng dụng: Được mệnh danh là <b>"Vua" của Lập trình thi đấu (Competitive Programming)</b> nhờ thư viện STL (Standard Template Library) bá đạo. Ngoài ra còn dùng làm Game Engine, Hệ điều hành, Trình duyệt...
+> Đặc trưng: std::cout, con trỏ (pointers), cấp phát bộ nhớ động, và nỗi ám ảnh mang tên... <i>Segmentation Fault</i>. 💀
+`
+        };
+
+        // ---------- MỞ / ĐÓNG ẢNH (LIGHTBOX) ----------
+        function openModal(imgSrc) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            modalImg.src = imgSrc;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('image-modal');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+            setTimeout(() => {
+                cmdInput.focus();
+            }, 350);
+        }
+
+        // ---------- MỞ / ĐÓNG VIDEO (MUSIC) ----------
+        function openVideoModal(videoSrc) {
+            const modal = document.getElementById('video-modal');
+            const videoElement = document.getElementById('modal-video');
+            videoElement.src = videoSrc;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                videoElement.play(); // Tự động phát khi cửa sổ mở
+            }, 10);
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('video-modal');
+            const videoElement = document.getElementById('modal-video');
+            
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            
+            // Dừng video lập tức khi đóng và reset thời gian
+            videoElement.pause();
+            videoElement.currentTime = 0;
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+            setTimeout(() => {
+                cmdInput.focus();
+            }, 350);
+        }
+
+        let currentGameAnimationId = null;
+        let currentGameTimeoutId = null;
+
+        function stopCurrentGame() {
+            if (currentGameAnimationId) cancelAnimationFrame(currentGameAnimationId);
+            if (currentGameTimeoutId) clearTimeout(currentGameTimeoutId);
+            if (window.currentGameKeyHandler) {
+                window.removeEventListener('keydown', window.currentGameKeyHandler);
+            }
+        }
+
+        function scrollToBottom() {
+            terminalContainer.scrollTop = terminalContainer.scrollHeight;
+        }
+
+        function printLine(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            div.className = "mb-1";
+            outputDiv.appendChild(div);
+            scrollToBottom();
+        }
+
+        // ---------- LỆNH TỰ HỦY (SELF DESTRUCT) ----------
+        async function triggerSelfDestruct() {
+            isSelfDestructing = true;
+            stopCurrentGame();
+            cmdInput.disabled = true;
+            inputWrapper.classList.add('hidden');
+
+            mainBody.classList.add('bg-red-alert');
+            terminalContainer.classList.add('glitch-mode', 'red-alert-text');
+            terminalContainer.style.color = '#ff003c';
+
+            printLine("<br><span class='text-white bg-red-600 px-2 py-1 font-bold'>[!] CRITICAL ERROR: UNAUTHORIZED COMMAND DETECTED.</span>");
+            await new Promise(r => setTimeout(r, 800));
+            
+            printLine("<span class='text-red-400 font-bold'>[!] INITIATING SYSTEM PURGE PROTOCOL...</span>");
+            await new Promise(r => setTimeout(r, 1200));
+
+            const folders = ['/bin', '/boot', '/dev', '/etc', '/home/son/secrets', '/lib', '/mnt', '/opt', '/root', '/usr', '/var'];
+            for(let f of folders) {
+                printLine(`<span>deleting ${f}/* ... [OK]</span>`);
+                await new Promise(r => setTimeout(r, 150));
+            }
+
+            printLine("<br><span class='text-white font-bold text-xl uppercase'>Kernel panic - not syncing: Fatal Exception!</span>");
+            printLine("<span>System memory dumped. Core destroyed.</span>");
+            
+            await new Promise(r => setTimeout(r, 2000));
+
+            outputDiv.innerHTML = '';
+            mainBody.classList.remove('bg-red-alert');
+            terminalContainer.classList.remove('glitch-mode', 'red-alert-text');
+            terminalContainer.style.color = '#00ff41';
+            
+            printLine("<span class='text-gray-500 italic'>Rebooting interface in recovery mode...</span><br>");
+            await new Promise(r => setTimeout(r, 1500));
+            
+            isSelfDestructing = false;
+            cmdInput.disabled = false;
+            outputDiv.innerHTML = '';
+            bootSequence();
+        }
+
+        // ---------- CHATBOT AI (ASKSON) ----------
+        async function processAskSon(question) {
+            if (!question) {
+                printLine("<span class='text-term-dim'>[Sơn AI]: Bạn muốn hỏi gì? Cú pháp: <b class='text-white'>askson [câu hỏi của bạn]</b></span>");
+                return;
+            }
+
+            const thinkingId = 'thinking-' + Date.now();
+            printLine(`<span id="${thinkingId}" class="text-term-dim italic animate-pulse">Sơn AI đang phân tích dữ liệu...</span>`);
+            cmdInput.disabled = true;
+
+            await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+            
+            document.getElementById(thinkingId).remove();
+
+            let answer = "";
+            let q = question.toLowerCase();
+
+            if (q.includes("người yêu") || q.includes("ny") || q.includes("tình yêu") || q.includes("gái") || q.includes("crush")) {
+                const ans = [
+                    "Ngôn ngữ C++ còn chưa master xong, thời gian đâu mà master trái tim ai đó 😢",
+                    "Segmentation Fault còn dễ fix hơn là kiếm người yêu nhé.",
+                    "Trái tim tôi hiện đã commit 100% cho thuật toán và Bolero rồi.",
+                    "Lỗi 404: Trái tim chưa mở cổng kết nối (Port closed) 💔",
+                    "Em là để ngắm, Code là để yêu 🐧"
+                ];
+                answer = ans[Math.floor(Math.random() * ans.length)];
+            } 
+            else if (q.includes("code") || q.includes("c++") || q.includes("bug") || q.includes("lỗi") || q.includes("it")) {
+                const ans = [
+                    "Bộ trưởng chém gió thì code bằng mồm nhé 🗣️ Đùa thôi, C++ là chân ái!",
+                    "Bug không phải là lỗi, bug là một tính năng chưa được document.",
+                    "Code giỏi thì ít mà ngồi fix bug trầm cảm thì nhiều.",
+                ];
+                answer = ans[Math.floor(Math.random() * ans.length)];
+            } 
+            else if (q.includes("bolero") || q.includes("nhạc") || q.includes("hát") || q.includes("sương trắng")) {
+                answer = "Bật 'Sương trắng miền quê ngoại' lên, nhấp ngụm trà đá, và nhìn code chạy Time Limit Exceeded. Đời còn gì bằng!";
+            } 
+            else if (q.includes("chu văn an") || q.includes("cva") || q.includes("trường bưởi") || q.includes("k119")) {
+                answer = "CVA K119 - Nơi hội tụ của những thuật toán sư đỉnh cao";
+            } 
+            else if (q.includes("đẹp trai") || q.includes("xấu") || q.includes("ngon") || q.includes("nhan sắc")) {
+                answer = "Chuyện hiển nhiên! 10 điểm không có nhưng. Xin hãy hỏi những câu trí tuệ hơn 😎";
+            } 
+            else if (q.includes("chào") || q.includes("hello") || q.includes("hi")) {
+                answer = "Chào bạn! Mình là AI giả lập của Bộ trưởng Đặng Minh Sơn. Bạn cần thỉnh giáo điều gì?";
+            } 
+            else if (q.includes("tên gì") || q.includes("là ai") || q.includes("ai đây")) {
+                answer = "Tôi là Sơn AI - phiên bản kỹ thuật số của Đặng Minh Sơn, nam sinh thanh lịch Chuyên Tin K119.";
+            } 
+            else if (q.includes("chơi") || q.includes("game") || q.includes("giải trí")) {
+                answer = "Muốn giải trí à? Hãy gõ lệnh 'dino', 'ransanmoi' hoặc 'flappybird' để thử sức nhé!";
+            }
+            else if (q.includes("ngu") || q.includes("dốt") || q.includes("chửi")) {
+                answer = "Hơi nóng nảy rồi đấy. AI Sơn tuy thân thiện nhưng có thể cấp vé block miễn phí nhé 🛑";
+            }
+            else {
+                const ans = [
+                    "Câu này khó ngang ngửa đề thi HSG Quốc Gia. Bộ trưởng chịu!",
+                    "Tôi đang bận đi fix bug, bạn có thể hỏi câu khác dễ hơn không?",
+                    "Vui lòng dịch câu này sang ngôn ngữ C++, tôi không hiểu tiếng người lắm.",
+                    "Hỏi câu khác đi bạn ơi, câu này ngoài vùng phủ sóng của trạm phát sóng CVA rồi.",
+                    "Để tôi suy nghĩ... Ờm... Thực ra là tôi không biết trả lời sao ¯\\_(ツ)_/¯"
+                ];
+                answer = ans[Math.floor(Math.random() * ans.length)];
+            }
+
+            printLine(`<span class="text-cyan-400 font-bold glow">[Sơn AI]:</span> <span class="text-white">${answer}</span>`);
+            cmdInput.disabled = false;
+            cmdInput.focus();
+        }
+
+        // ---------- GAME 1: KHỦNG LONG VƯỢT RÀO (DINO RUN) ----------
+        function startDino() {
+            stopCurrentGame();
+            const id = 'dino-' + Date.now();
+            printLine(`
+            <div class="flex flex-col items-center my-4 w-full">
+                <p class="text-yellow-400 mb-2 glow">DINO_RUN.EXE</p>
+                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md bg-[#111] cursor-pointer shadow-[0_0_15px_rgba(0,143,17,0.5)] block"></canvas>
+                
+                <!-- Nút nhảy hỗ trợ màn hình cảm ứng điện thoại -->
+                <button id="btn-jump-${id}" class="mt-3 bg-term-dim text-black font-bold px-8 py-3 rounded active:bg-term-green md:hidden shadow-md">
+                    JUMP (NHẢY) ▲
+                </button>
+
+                <p class="text-xs text-gray-500 mt-2 text-center">PC: Phím Space / Mũi tên lên / Click | Mobile: Chạm vào màn game hoặc Bấm nút</p>
+            </div>`);
+
+            const canvas = document.getElementById(id);
+            const ctx = canvas.getContext('2d');
+
+            let dino, obstacles, score, gameover, frame, gameStarted;
+            const groundY = 240;
+
+            function initGame() {
+                dino = {
+                    x: 40,
+                    y: groundY - 30,
+                    width: 20,
+                    height: 30,
+                    vy: 0,
+                    gravity: 0.65,
+                    jumpForce: -11,
+                    isGrounded: true
+                };
+                obstacles = [];
+                score = 0;
+                gameover = false;
+                frame = 0;
+                gameStarted = false;
+            }
+
+            initGame();
+
+            function draw() {
+                if (gameover) {
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "red";
+                    ctx.font = "bold 20px 'Fira Code'";
+                    ctx.textAlign = "center";
+                    ctx.fillText("GAME OVER!", 150, 130);
+                    ctx.fillStyle = "#00ff41";
+                    ctx.fillText("Score: " + score, 150, 160);
+                    ctx.fillStyle = "white";
+                    ctx.font = "14px 'Fira Code'";
+                    ctx.fillText("Tap / Space to Restart", 150, 200);
+                    return;
+                }
+
+                currentGameAnimationId = requestAnimationFrame(draw);
+
+                // Nền game
+                ctx.fillStyle = "#111";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Vẽ Mặt đất
+                ctx.strokeStyle = "#008f11";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, groundY);
+                ctx.lineTo(canvas.width, groundY);
+                ctx.stroke();
+
+                if (!gameStarted) {
+                    ctx.fillStyle = "white";
+                    ctx.font = "16px 'Fira Code'";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Tap / Space to Start", 150, 140);
+
+                    // Vẽ Khủng long ban đầu
+                    ctx.fillStyle = "#00ff41";
+                    ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+                    ctx.fillStyle = "#000";
+                    ctx.fillRect(dino.x + 12, dino.y + 4, 4, 4);
+                    return;
+                }
+
+                // Trọng lực khủng long
+                dino.vy += dino.gravity;
+                dino.y += dino.vy;
+
+                if (dino.y + dino.height >= groundY) {
+                    dino.y = groundY - dino.height;
+                    dino.vy = 0;
+                    dino.isGrounded = true;
+                }
+
+                // Sinh chướng ngại vật (Xương hoại / Xương rồng)
+                frame++;
+                let spawnInterval = Math.max(45, 90 - Math.floor(score / 4));
+                if (frame % spawnInterval === 0) {
+                    let obsHeight = Math.floor(Math.random() * 20) + 20; 
+                    let obsWidth = Math.floor(Math.random() * 10) + 14;  
+                    obstacles.push({
+                        x: canvas.width,
+                        y: groundY - obsHeight,
+                        width: obsWidth,
+                        height: obsHeight,
+                        passed: false
+                    });
+                }
+
+                // Di chuyển & vẽ chướng ngại vật
+                let speed = 3.5 + Math.min(score * 0.1, 5);
+                ctx.fillStyle = "#ff003c";
+                for (let i = 0; i < obstacles.length; i++) {
+                    let obs = obstacles[i];
+                    obs.x -= speed;
+
+                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+                    // Kiểm tra va chạm (AABB Collision)
+                    if (
+                        dino.x < obs.x + obs.width &&
+                        dino.x + dino.width > obs.x &&
+                        dino.y < obs.y + obs.height &&
+                        dino.y + dino.height > obs.y
+                    ) {
+                        gameover = true;
+                    }
+
+                    // Tính điểm
+                    if (obs.x + obs.width < dino.x && !obs.passed) {
+                        score++;
+                        obs.passed = true;
+                    }
+                }
+
+                // Lọc vật cản ra khỏi màn hình
+                obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
+
+                // Vẽ Khủng long
+                ctx.fillStyle = "#00ff41";
+                ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+                // Mắt
+                ctx.fillStyle = "#000";
+                ctx.fillRect(dino.x + 12, dino.y + 4, 4, 4);
+
+                // Tính năng điểm số
+                ctx.fillStyle = "#00ff41";
+                ctx.font = "bold 14px 'Fira Code'";
+                ctx.textAlign = "left";
+                ctx.fillText("Score: " + score, 10, 25);
+            }
+
+            function doJump(e) {
+                if (e) e.preventDefault();
+                if (gameover) {
+                    if (currentGameAnimationId) cancelAnimationFrame(currentGameAnimationId);
+                    initGame();
+                    draw();
+                    return;
+                }
+                if (!gameStarted) {
+                    gameStarted = true;
+                }
+                if (dino.isGrounded) {
+                    dino.vy = dino.jumpForce;
+                    dino.isGrounded = false;
+                }
+            }
+
+            canvas.addEventListener('mousedown', doJump);
+            canvas.addEventListener('touchstart', doJump, { passive: false });
+
+            const btnJump = document.getElementById(`btn-jump-${id}`);
+            if (btnJump) {
+                btnJump.onclick = doJump;
+            }
+
+            const keyHandler = (e) => {
+                if (document.activeElement === cmdInput) return;
+                if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                    doJump(e);
+                }
+            };
+
+            window.currentGameKeyHandler = keyHandler;
+            window.addEventListener('keydown', window.currentGameKeyHandler, { passive: false });
+
+            draw();
+            cmdInput.blur();
+        }
+
+        // ---------- GAME 2: RẮN SĂN MỒI ----------
+        function startSnake() {
+            stopCurrentGame();
+            const id = 'snake-' + Date.now();
+            printLine(`
+            <div class="flex flex-col items-center my-4 w-full">
+                <p class="text-yellow-400 mb-2 glow">RANSANMOI.EXE</p>
+                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md bg-[#111] cursor-pointer shadow-[0_0_15px_rgba(0,143,17,0.5)]"></canvas>
+                
+                <div class="grid grid-cols-3 gap-2 mt-4 md:hidden">
+                    <div></div>
+                    <button id="btn-up-${id}" class="bg-term-dim text-black font-bold px-5 py-3 rounded active:bg-term-green">▲</button>
+                    <div></div>
+                    <button id="btn-left-${id}" class="bg-term-dim text-black font-bold px-5 py-3 rounded active:bg-term-green">◀</button>
+                    <button id="btn-down-${id}" class="bg-term-dim text-black font-bold px-5 py-3 rounded active:bg-term-green">▼</button>
+                    <button id="btn-right-${id}" class="bg-term-dim text-black font-bold px-5 py-3 rounded active:bg-term-green">▶</button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 text-center">PC: Phím điều hướng hoặc W A S D | Mobile: Nút bấm</p>
+            </div>`);
+
+            const canvas = document.getElementById(id);
+            const ctx = canvas.getContext('2d');
+            const tileSize = 15;
+            const tileCount = 20;
+
+            let snake, food, dx, dy, score, gameover;
+
+            function initGame() {
+                snake = [{x: 10, y: 10}];
+                food = {x: 5, y: 5};
+                dx = 0; 
+                dy = -1;
+                score = 0;
+                gameover = false;
+            }
+
+            initGame();
+
+            function draw() {
+                if(gameover) {
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "red";
+                    ctx.font = "bold 20px 'Fira Code'";
+                    ctx.textAlign = "center";
+                    ctx.fillText("GAME OVER!", 150, 130);
+                    ctx.fillStyle = "#00ff41";
+                    ctx.fillText("Score: " + score, 150, 160);
+                    ctx.fillStyle = "white";
+                    ctx.font = "14px 'Fira Code'";
+                    ctx.fillText("Tap / Space to Restart", 150, 200);
+                    return;
+                }
+
+                currentGameTimeoutId = setTimeout(() => {
+                    currentGameAnimationId = requestAnimationFrame(draw);
+                }, 1000 / 10);
+
+                let head = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+                if(head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                    gameover = true;
+                }
+                for(let i=0; i<snake.length; i++) {
+                    if(head.x === snake[i].x && head.y === snake[i].y) gameover = true;
+                }
+
+                if(!gameover) {
+                    snake.unshift(head);
+                    if(head.x === food.x && head.y === food.y) {
+                        score++;
+                        food = {x: Math.floor(Math.random()*tileCount), y: Math.floor(Math.random()*tileCount)};
+                    } else {
+                        snake.pop();
+                    }
+                }
+
+                ctx.fillStyle = "#111";
+                ctx.fillRect(0,0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = "red";
+                ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize - 1, tileSize - 1);
+                
+                ctx.fillStyle = "#00ff41";
+                for(let i=0; i<snake.length; i++) {
+                    ctx.fillStyle = i === 0 ? "#ffffff" : "#00ff41"; 
+                    ctx.fillRect(snake[i].x * tileSize, snake[i].y * tileSize, tileSize - 1, tileSize - 1);
+                }
+                
+                ctx.fillStyle = "rgba(0, 255, 65, 0.5)";
+                ctx.font = "14px 'Fira Code'";
+                ctx.textAlign = "left";
+                ctx.fillText("Score: " + score, 10, 20);
+            }
+
+            function restartEvent(e) {
+                if(e) e.preventDefault();
+                if(gameover) {
+                    if (currentGameTimeoutId) clearTimeout(currentGameTimeoutId);
+                    initGame();
+                    draw();
+                }
+            }
+
+            canvas.addEventListener('mousedown', restartEvent);
+            canvas.addEventListener('touchstart', restartEvent, {passive: false});
+
+            const keyHandler = (e) => {
+                if (document.activeElement === cmdInput) return;
+                if (gameover && e.code === 'Space') { restartEvent(e); return; }
+                const allowedKeys = ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight", "KeyW", "KeyS", "KeyA", "KeyD"];
+                if(allowedKeys.includes(e.code)) {
+                    e.preventDefault();
+                    if((e.code === 'ArrowUp' || e.code === 'KeyW') && dy !== 1) { dx = 0; dy = -1; }
+                    if((e.code === 'ArrowDown' || e.code === 'KeyS') && dy !== -1) { dx = 0; dy = 1; }
+                    if((e.code === 'ArrowLeft' || e.code === 'KeyA') && dx !== 1) { dx = -1; dy = 0; }
+                    if((e.code === 'ArrowRight' || e.code === 'KeyD') && dx !== -1) { dx = 1; dy = 0; }
+                }
+            };
+            window.currentGameKeyHandler = keyHandler;
+            window.addEventListener('keydown', window.currentGameKeyHandler, {passive: false});
+
+            const btnUp = document.getElementById(`btn-up-${id}`);
+            if(btnUp) {
+                btnUp.onclick = () => { if(dy !== 1) { dx = 0; dy = -1; } };
+                document.getElementById(`btn-down-${id}`).onclick = () => { if(dy !== -1) { dx = 0; dy = 1; } };
+                document.getElementById(`btn-left-${id}`).onclick = () => { if(dx !== 1) { dx = -1; dy = 0; } };
+                document.getElementById(`btn-right-${id}`).onclick = () => { if(dx !== -1) { dx = 1; dy = 0; } };
+            }
+
+            draw();
+            cmdInput.blur(); 
+        }
+
+        // ---------- GAME 3: FLAPPY BIRD ----------
+        function startFlappy() {
+            stopCurrentGame();
+            const id = 'flappy-' + Date.now();
+            printLine(`
+            <div class="flex flex-col items-center my-4 w-full">
+                <p class="text-yellow-400 mb-2 glow">FLAPPYBIRD.EXE</p>
+                <canvas id="${id}" width="300" height="400" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_rgba(0,143,17,0.5)] block bg-[#70c5ce]"></canvas>
+                <p class="text-xs text-gray-500 mt-2 text-center">PC: Nhấn phím <b>Space</b> hoặc Click chuột | Mobile: Chạm vào vùng Game</p>
+            </div>`);
+
+            const canvas = document.getElementById(id);
+            const ctx = canvas.getContext('2d');
+
+            let bird, pipes, score, gameover, frame, gameStarted;
+
+            function initGame() {
+                bird = {x: 50, y: 150, width: 20, height: 20, velocity: 0, gravity: 0.5, jump: -7};
+                pipes = [];
+                score = 0;
+                gameover = false;
+                frame = 0;
+                gameStarted = false;
+            }
+
+            initGame();
+
+            function draw() {
+                if(gameover) {
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "red";
+                    ctx.font = "bold 20px 'Fira Code'";
+                    ctx.textAlign = "center";
+                    ctx.fillText("GAME OVER!", 150, 190);
+                    ctx.fillStyle = "white";
+                    ctx.fillText("Score: " + score, 150, 220);
+                    ctx.fillStyle = "yellow";
+                    ctx.font = "14px 'Fira Code'";
+                    ctx.fillText("Tap / Space to Restart", 150, 260);
+                    return;
+                }
+                
+                currentGameAnimationId = requestAnimationFrame(draw);
+
+                ctx.fillStyle = "#70c5ce"; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if(!gameStarted) {
+                    ctx.fillStyle = "white";
+                    ctx.font = "16px 'Fira Code'";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Tap / Space to Start", 150, 200);
+                    ctx.fillStyle = "#ffcc00";
+                    ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+                    return;
+                }
+
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
+                if(bird.y + bird.height >= canvas.height || bird.y < 0) gameover = true;
+
+                if(frame % 100 === 0) {
+                    let gap = 110;
+                    let pipeY = Math.random() * (canvas.height - gap - 60) + 30;
+                    pipes.push({x: canvas.width, y: pipeY, width: 40, gap: gap, passed: false});
+                }
+
+                ctx.fillStyle = "#008f11"; 
+                for(let i = 0; i < pipes.length; i++) {
+                    let p = pipes[i];
+                    p.x -= 2.5;
+                    ctx.fillRect(p.x, 0, p.width, p.y);
+                    ctx.fillRect(p.x, p.y + p.gap, p.width, canvas.height - p.y - p.gap);
+
+                    if(bird.x < p.x + p.width && bird.x + bird.width > p.x &&
+                      (bird.y < p.y || bird.y + bird.height > p.y + p.gap)) {
+                          gameover = true;
+                    }
+                    if(p.x + p.width < bird.x && !p.passed) {
+                        score++;
+                        p.passed = true;
+                    }
+                }
+                pipes = pipes.filter(p => p.x + p.width > 0); 
+
+                ctx.fillStyle = "#ffcc00";
+                ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+
+                ctx.fillStyle = "black";
+                ctx.font = "bold 20px 'Fira Code'";
+                ctx.textAlign = "left";
+                ctx.fillText("Score: " + score, 10, 30);
+                frame++;
+            }
+
+            function jumpEvent(e) {
+                if(e) e.preventDefault();
+                if(gameover) {
+                    if (currentGameAnimationId) cancelAnimationFrame(currentGameAnimationId);
+                    initGame();
+                    draw();
+                    return;
+                }
+                if(!gameStarted) gameStarted = true;
+                bird.velocity = bird.jump;
+            }
+
+            canvas.addEventListener('mousedown', jumpEvent);
+            canvas.addEventListener('touchstart', jumpEvent, {passive: false});
+
+            const keyHandler = (e) => {
+                if (document.activeElement === cmdInput) return;
+                if(e.code === 'Space') jumpEvent(e);
+            };
+            window.currentGameKeyHandler = keyHandler;
+            window.addEventListener('keydown', window.currentGameKeyHandler, {passive: false});
+
+            draw();
+            cmdInput.blur(); 
+        }
+
+        // ---------- CODE HACKER MATRIX ----------
+        function startCodeSequence() {
+            stopCurrentGame(); 
+            
+            printLine("<span class='text-yellow-400 mb-1 block'>[!] INITIATING SYSTEM OVERRIDE... HACKING MATRIX</span>");
+            printLine("<span class='text-gray-500 mb-3 block'>Mẹo: Gõ <b class='text-white'>clear</b> hoặc <b class='text-white'>home</b> để dừng lệnh này.</span>");
+            
+            let num = 0;
+            function generateNumbers() {
+                let chunk = '';
+                for(let i = 0; i < 30; i++) {
+                    chunk += (num++) + " ";
+                }
+                
+                const div = document.createElement('div');
+                div.className = "text-term-dim break-all text-justify font-mono";
+                div.textContent = chunk;
+                outputDiv.appendChild(div);
+                
+                while (outputDiv.childElementCount > 60) {
+                    outputDiv.removeChild(outputDiv.firstElementChild);
+                }
+                
+                scrollToBottom();
+                currentGameAnimationId = requestAnimationFrame(generateNumbers);
+            }
+            
+            generateNumbers();
+        }
+
+        // ========================================================
+        // CORE SYSTEM 
+        // ========================================================
+        function showWelcomeMessage() {
+            printLine(`<pre class="glow hidden sm:block text-term-dim leading-none">${asciiArt}</pre>`);
+            printLine("<span class='text-white font-bold text-lg'>Welcome to Son's Interactive Bio-Terminal.</span>");
+            printLine("Type <span class='glow text-white'>'help'</span> to see available commands or use the buttons below.<br>");
+            scrollToBottom();
+        }
+
+        async function typeText(text, element, speed = 20) {
+            return new Promise(resolve => {
+                let i = 0;
+                element.innerHTML += "<br>";
+                const typingInterval = setInterval(() => {
+                    if (i < text.length) {
+                        if (text.charAt(i) === '\n') {
+                            element.innerHTML += "<br>";
+                        } else {
+                            element.innerHTML += text.charAt(i);
+                        }
+                        scrollToBottom();
+                        i++;
+                    } else {
+                        clearInterval(typingInterval);
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
+
+        function processCommand(rawCmd) {
+            printLine(userPrompt + `<span class="text-white">${rawCmd}</span>`);
+            const cmdLower = rawCmd.trim().toLowerCase();
+            
+            if (cmdLower === '') return;
+
+            // Xóa màn hình
+            if (cmdLower === 'clear') { outputDiv.innerHTML = ''; stopCurrentGame(); return; }
+
+            // Trở về Home 
+            if (cmdLower === 'home') { outputDiv.innerHTML = ''; stopCurrentGame(); showWelcomeMessage(); return; }
+
+            // Tự hủy
+            if (cmdLower === 'sudo rm -rf /' || cmdLower === 'sudo' || cmdLower === 'destroy' || cmdLower === 'rm -rf /') {
+                triggerSelfDestruct();
+                return;
+            }
+
+            // Chat AI
+            if (cmdLower.startsWith('askson')) {
+                const question = rawCmd.substring(6).trim();
+                processAskSon(question);
+                return;
+            }
+
+            // Lệnh Game mới: Khủng long
+            if (cmdLower === 'dino' || cmdLower === 'khunglong') {
+                startDino();
+                return;
+            }
+
+            // Các game khác
+            if (cmdLower === 'code') { startCodeSequence(); return; }
+            if (cmdLower === 'ransanmoi') { startSnake(); return; }
+            if (cmdLower === 'flappybird') { startFlappy(); return; }
+
+            // Lệnh Music mới thêm
+            if (cmdLower === 'music') {
+                printLine("<span class='text-term-dim'>[System] Đang mở trình phát nhạc: Sương trắng miền quê ngoại - Quang Lê...</span>");
+                openVideoModal('Music.mp4');
+                return;
+            }
+
+            // Lệnh người yêu
+            if (cmdLower === 'người yêu' || cmdLower === 'ny') {
+                printLine('<span class="text-red-500 glow text-lg font-bold">Error 404: Not Found 💔. Thử dùng lệnh: askson có người yêu chưa?</span>');
+                return;
+            }
+
+            // Các lệnh thông thường trong Database
+            if (commands[cmdLower]) {
+                printLine(commands[cmdLower]);
+            } else {
+                printLine(`bash: ${rawCmd}: command not found. Type 'help' to see available commands.`);
+            }
+        }
+
+        async function bootSequence() {
+            const bootMsg = document.createElement('span');
+            bootMsg.className = "text-term-dim";
+            outputDiv.appendChild(bootMsg);
+
+            await typeText("son@cva-k119:~$ booting system...", bootMsg, 30);
+
+            setTimeout(() => {
+                printLine("<span class='text-yellow-400'>[OK] Kernel loaded.</span>");
+                printLine("<span class='text-yellow-400'>[OK] Mounting filesystems...</span>");
+                printLine("<span class='text-yellow-400'>[OK] Starting CVA K119 Interface...</span>");
+
+                setTimeout(() => {
+                    showWelcomeMessage();
+                    inputWrapper.classList.remove('hidden');
+                    cmdInput.focus();
+                }, 500);
+            }, 400);
+        }
+
+        cmdInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !isSelfDestructing) {
+                const cmd = this.value;
+                this.value = '';
+                processCommand(cmd);
+            }
+        });
+
+        // Hỗ trợ giữ focus vào ô lệnh khi bấm ra vùng trắng, 
+        // TRỪ KHI đang thao tác với các thành phần đặc biệt (Ảnh, Video, Canvas, Nút...)
+        terminalContainer.addEventListener('click', (e) => {
+            if (
+                !isSelfDestructing && 
+                e.target.tagName !== 'CANVAS' && 
+                e.target.tagName !== 'BUTTON' && 
+                e.target.tagName !== 'IMG' && 
+                e.target.tagName !== 'VIDEO' &&
+                !e.target.closest('#image-modal') && 
+                !e.target.closest('#video-modal') && 
+                window.getSelection().toString() === ''
+            ) {
+                cmdInput.focus();
+            }
+        });
+
+        window.onload = () => {
+            bootSequence();
+        };
+
+    </script>
+</body>
+</html>
