@@ -3,20 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 1. Đổi title web thành "Đặng Minh Sơn" -->
     <title>Đặng Minh Sơn</title>
-    
-    <!-- 2. Thêm icon web (favicon) trỏ đến file logo.png -->
     <link rel="icon" type="image/png" href="logo.png">
-
-    <!-- TOÀN BỘ CÁC ĐOẠN CODE BÊN DƯỚI (link CSS, font, script...) BẠN GIỮ NGUYÊN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ... -->
-</head>
 
     <!-- Fonts: Fira Code for developer aesthetic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,6 +15,16 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- CSS Variables for Themes -->
+    <style>
+        :root {
+            --term-bg: #000000;
+            --term-main: #00ff41;
+            --term-dim: #008f11;
+            --term-glow: rgba(0, 255, 65, 0.5);
+        }
+    </style>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -33,10 +32,10 @@
             theme: {
                 extend: {
                     colors: {
-                        'term-bg': '#0a0a0a',
-                        'term-green': '#00ff41',
-                        'term-green-glow': '#00ff4180',
-                        'term-dim': '#008f11'
+                        'term-bg': 'var(--term-bg)',
+                        'term-green': 'var(--term-main)',
+                        'term-green-glow': 'var(--term-glow)',
+                        'term-dim': 'var(--term-dim)'
                     },
                     fontFamily: {
                         'mono': ['"Fira Code"', 'monospace'],
@@ -48,15 +47,15 @@
 
     <style>
         body {
-            background-color: #000;
-            color: #00ff41;
+            background-color: var(--term-bg);
+            color: var(--term-main);
             font-family: 'Fira Code', monospace;
             overflow: hidden;
             margin: 0;
             height: 100dvh;
             display: flex;
             flex-direction: column;
-            transition: background-color 0.2s ease-in-out;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
         }
 
         /* CRT Scanline effect */
@@ -81,7 +80,7 @@
 
         /* Glowing text effect */
         .glow {
-            text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff4150;
+            text-shadow: 0 0 5px var(--term-main), 0 0 10px var(--term-glow);
         }
 
         /* Custom Scrollbar */
@@ -89,30 +88,30 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #0a0a0a;
+            background: var(--term-bg);
         }
         ::-webkit-scrollbar-thumb {
-            background: #008f11;
+            background: var(--term-dim);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #00ff41;
+            background: var(--term-main);
         }
 
         /* Terminal Input Styling */
         input[type="text"] {
             background: transparent;
             border: none;
-            color: #00ff41;
+            color: var(--term-main);
             outline: none;
             font-family: 'Fira Code', monospace;
             flex-grow: 1;
-            caret-color: #00ff41;
+            caret-color: var(--term-main);
         }
 
         .link-hover:hover {
             color: #fff;
-            background-color: #008f11;
+            background-color: var(--term-dim);
             text-decoration: none;
         }
 
@@ -147,13 +146,13 @@
 <body class="flex flex-col" id="main-body">
     <div class="scanlines"></div>
 
-    <!-- Image Modal Overlay (Ẩn mặc định) -->
+    <!-- Image Modal Overlay -->
     <div id="image-modal" class="fixed inset-0 z-[100] hidden bg-black/90 flex justify-center items-center opacity-0 transition-opacity duration-300" onclick="closeModal()">
         <span class="absolute top-4 right-6 text-term-green text-5xl cursor-pointer hover:text-white glow transition-colors" title="Đóng ảnh">&times;</span>
         <img id="modal-img" class="max-w-[95vw] max-h-[90vh] object-contain rounded-md border-2 border-term-dim shadow-[0_0_30px_rgba(0,143,17,0.5)]" src="" alt="Ảnh phóng to">
     </div>
 
-    <!-- Video Modal Overlay (MỚI THÊM) -->
+    <!-- Video Modal Overlay -->
     <div id="video-modal" class="fixed inset-0 z-[100] hidden bg-black/90 flex justify-center items-center opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeVideoModal()">
         <span class="absolute top-4 right-6 text-term-green text-5xl cursor-pointer hover:text-white glow transition-colors z-[101]" title="Đóng video" onclick="closeVideoModal()">&times;</span>
         <video id="modal-video" class="max-w-[95vw] max-h-[90vh] object-contain rounded-md border-2 border-term-dim shadow-[0_0_30px_rgba(0,143,17,0.5)] outline-none" controls playsinline>
@@ -176,7 +175,7 @@
     </main>
 
     <!-- Mobile Friendly Quick Access Bar -->
-    <footer class="w-full bg-[#111] border-t border-term-dim p-4 z-40 shrink-0" id="footer-bar">
+    <footer class="w-full border-t border-term-dim p-4 z-40 shrink-0 bg-black/50 backdrop-blur-sm" id="footer-bar">
         <div class="max-w-4xl mx-auto">
             <p class="text-xs text-term-dim mb-3 text-center uppercase tracking-widest">>> Quick Access <<</p>
             <div class="flex flex-wrap justify-center gap-3">
@@ -197,6 +196,38 @@
     </footer>
 
     <script>
+        // ---------- HỆ THỐNG THEMES ----------
+        const themeConfig = {
+            'matrix': { name: 'Matrix (Mặc định)', bg: '#000000', main: '#00ff41', dim: '#008f11', glow: 'rgba(0, 255, 65, 0.5)' },
+            'blood':  { name: 'Blood Hacker', bg: '#0a0000', main: '#ff3333', dim: '#990000', glow: 'rgba(255, 51, 51, 0.5)' },
+            'cyber':  { name: 'Cyberpunk', bg: '#0b0c10', main: '#00ffff', dim: '#8c00ff', glow: 'rgba(0, 255, 255, 0.5)' },
+            'ubuntu': { name: 'Ubuntu Retro', bg: '#300a24', main: '#ffffff', dim: '#e95420', glow: 'rgba(255, 255, 255, 0.3)' },
+            'ocean':  { name: 'Deep Ocean', bg: '#011627', main: '#82aaff', dim: '#3a7bd5', glow: 'rgba(130, 170, 255, 0.5)' },
+            'gold':   { name: 'Golden Royal', bg: '#1a1a1a', main: '#ffd700', dim: '#b8860b', glow: 'rgba(255, 215, 0, 0.5)' }
+        };
+
+        let currentActiveTheme = themeConfig['matrix'];
+
+        function applyTheme(themeKey) {
+            if (!themeConfig[themeKey]) return false;
+            const t = themeConfig[themeKey];
+            currentActiveTheme = t;
+            
+            document.documentElement.style.setProperty('--term-bg', t.bg);
+            document.documentElement.style.setProperty('--term-main', t.main);
+            document.documentElement.style.setProperty('--term-dim', t.dim);
+            document.documentElement.style.setProperty('--term-glow', t.glow);
+            
+            localStorage.setItem('user_theme', themeKey);
+            return true;
+        }
+
+        const savedTheme = localStorage.getItem('user_theme');
+        if (savedTheme && themeConfig[savedTheme]) {
+            applyTheme(savedTheme);
+        }
+
+        // ---------- CORE VARIABLES ----------
         const outputDiv = document.getElementById('output');
         const inputWrapper = document.getElementById('input-wrapper');
         const cmdInput = document.getElementById('cmd-input');
@@ -228,20 +259,21 @@ AVAILABLE COMMANDS:
   <span class="glow text-white">cva</span>         - Giới thiệu về THPT Chuyên Chu Văn An
   <span class="glow text-white">cpp</span>         - Tìm hiểu về ngôn ngữ C++
   
-  [+] CHUYÊN MỤC GIẢI TRÍ:
+  [+] CHUYÊN MỤC GIẢI TRÍ & GIAO DIỆN:
   <span class="glow text-cyan-400">askson [câu hỏi]</span> - Chat trực tiếp với AI giả lập của Sơn
+  <span class="glow text-yellow-400">repair</span>      - Minigame sửa chữa Loa Amply bị hỏng (Mở khóa Bolero)
+  <span class="glow text-term-green">theme</span>       - Xem và đổi giao diện hiển thị (6 Themes)
   <span class="glow text-white">dino</span>        - Chơi game Khủng long vượt rào (Dino Run)
   <span class="glow text-white">ransanmoi</span>   - Chơi game Rắn săn mồi
   <span class="glow text-white">flappybird</span>  - Chơi game Flappy Bird
   <span class="glow text-white">code</span>        - Khởi động chuỗi số liệu tăng dần (Hacker mode)
-  <span class="glow text-white">music</span>       - Thưởng thức Bolero: Sương trắng miền quê ngoại
   <span class="glow text-white">sudo</span>        - Yêu cầu quyền Admin
   <span class="glow text-white">home</span>        - Quay về màn hình chào mừng CVA K119
   <span class="glow text-white">clear</span>       - Xóa toàn bộ nội dung màn hình
 `,
             'avatar': `
 <div class="flex flex-col items-center my-6 w-full shrink-0">
-    <div class="relative w-52 h-52 md:w-72 md:h-72 rounded-full border-[3px] border-term-green overflow-hidden shadow-[0_0_20px_rgba(0,255,65,0.6)] mb-5 shrink-0 cursor-pointer transition-transform hover:scale-105 duration-300 group" onclick="openModal('BaotangLSQSVN.jpg')">
+    <div class="relative w-52 h-52 md:w-72 md:h-72 rounded-full border-[3px] border-term-green overflow-hidden shadow-[0_0_20px_var(--term-glow)] mb-5 shrink-0 cursor-pointer transition-transform hover:scale-105 duration-300 group" onclick="openModal('BaotangLSQSVN.jpg')">
         <img src="BaotangLSQSVN.jpg" alt="Đặng Minh Sơn" class="absolute top-0 left-0 w-full h-full object-cover group-hover:opacity-80 transition-opacity" style="object-position: center;">
         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <i class="fas fa-search-plus text-4xl text-white drop-shadow-lg"></i>
@@ -291,7 +323,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 `
         };
 
-        // ---------- MỞ / ĐÓNG ẢNH (LIGHTBOX) ----------
+        // ---------- MỞ / ĐÓNG ẢNH ----------
         function openModal(imgSrc) {
             const modal = document.getElementById('image-modal');
             const modalImg = document.getElementById('modal-img');
@@ -307,15 +339,11 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             const modal = document.getElementById('image-modal');
             modal.classList.remove('opacity-100');
             modal.classList.add('opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-            setTimeout(() => {
-                cmdInput.focus();
-            }, 350);
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            setTimeout(() => { cmdInput.focus(); }, 350);
         }
 
-        // ---------- MỞ / ĐÓNG VIDEO (MUSIC) ----------
+        // ---------- MỞ / ĐÓNG VIDEO ----------
         function openVideoModal(videoSrc) {
             const modal = document.getElementById('video-modal');
             const videoElement = document.getElementById('modal-video');
@@ -324,27 +352,19 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modal.classList.add('opacity-100');
-                videoElement.play(); // Tự động phát khi cửa sổ mở
+                videoElement.play(); 
             }, 10);
         }
 
         function closeVideoModal() {
             const modal = document.getElementById('video-modal');
             const videoElement = document.getElementById('modal-video');
-            
             modal.classList.remove('opacity-100');
             modal.classList.add('opacity-0');
-            
-            // Dừng video lập tức khi đóng và reset thời gian
             videoElement.pause();
             videoElement.currentTime = 0;
-
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-            setTimeout(() => {
-                cmdInput.focus();
-            }, 350);
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            setTimeout(() => { cmdInput.focus(); }, 350);
         }
 
         let currentGameAnimationId = null;
@@ -370,6 +390,145 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             scrollToBottom();
         }
 
+       // ---------- MINIGAME: SỬA CHỮA LOA AMPLY (REPAIR) ----------
+        function startRepairGame() {
+            stopCurrentGame();
+            const id = 'repair-' + Date.now();
+
+            // Thứ tự các bước chuẩn xác: 1 -> 2 -> 3 -> 4 -> 6 (5 là bẫy)
+            const correctOrder = [1, 2, 3, 4, 6];
+            let currentStepIndex = 0; // Đang ở bước nào trong quy trình
+
+            // Mô tả trạng thái tương ứng với từng bước
+            const stepStates = [
+                { title: "MỨC 0/5: Bắt đầu kiểm tra", status: "Cháy tụ, đứt dây, bám bụi bẩn, chưa tháo vỏ.", spkLeft: "BROKEN", spkRight: "BROKEN", ampStatus: "OFF (CHẬP MẠCH)" },
+                { title: "MỨC 1/5: Đã tháo nắp bảo vệ", status: "Mở khung vỏ thành công, lộ rõ bảng mạch bên trong.", spkLeft: "EXPOSED", spkRight: "EXPOSED", ampStatus: "DISCONNECTED" },
+                { title: "MỨC 2/5: Đã vệ sinh bụi bẩn", status: "Bảng mạch & màng loa sạch sẽ, dễ dàng hàn linh kiện.", spkLeft: "CLEANED", spkRight: "CLEANED", ampStatus: "READY TO SOLDER" },
+                { title: "MỨC 3/5: Đã hàn xong dây tín hiệu", status: "Mối hàn chắc chắn, tín hiệu âm thanh thông suốt.", spkLeft: "WIRED", spkRight: "WIRED", ampStatus: "CAPACITOR DAMAGED" },
+                { title: "MỨC 4/5: Đã thay Tụ điện Amply mới", status: "Mạch công suất sẵn sàng hoạt động tối đa.", spkLeft: "READY", spkRight: "READY", ampStatus: "AMPLIFIER FIXED" },
+                { title: "MỨC 5/5: Lắp vỏ & Bật nguồn thành công!", status: "LOA ĐÃ SỬA XONG! SẴN SÀNG PHÁT NHẠC BOLERO!", spkLeft: "PLAYING", spkRight: "PLAYING", ampStatus: "POWER ON 100%" }
+            ];
+
+            // Đã bỏ đánh số thứ tự và bỏ nhắc (Bẫy) để tăng độ khó
+            const baseActions = [
+                { id: 1, text: "Tháo ốc vít & mở nắp vỏ loa" },
+                { id: 2, text: "Dùng cọ quét sạch bụi bẩn bên trong" },
+                { id: 3, text: "Hàn nối lại dây tín hiệu loa bị đứt" },
+                { id: 4, text: "Thay thế Tụ điện Amply bị phồng/cháy" },
+                { id: 5, text: "Cắm thẳng nguồn 220V vào mạch thử ngay" },
+                { id: 6, text: "Lắp vỏ bảo vệ & Bật công tắc Nguồn" }
+            ];
+
+            // Hàm đảo lộn ngẫu nhiên mảng
+            function shuffle(array) {
+                let currentIndex = array.length, randomIndex;
+                while (currentIndex != 0) {
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex--;
+                    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+                }
+                return array;
+            }
+
+            function renderASCII(stateIdx) {
+                const s = stepStates[stateIdx];
+                return `
+<pre class="font-mono text-[9px] sm:text-xs md:text-sm text-term-green leading-tight overflow-x-auto select-none p-2 border border-term-dim rounded bg-[#0a0a0a] m-0">
++-------------------------------------------------------------+
+|  [STEREO RADIO AMPLY VINTAGE]   (o)   (o)   [STATUS: ${s.ampStatus.padEnd(14)}] |
+|  +-------------------------------------------------------+  |
+|  |  FM  88...92...98...104...108 MHz   [SPEAKER DIAGNOSTIC]|  |
+|  +-------------------------------------------------------+  |
+|     /---------\\     /---------\\     [VOLUME KNOB]          |
+|    |  (O) (O)  |   |  (O) (O)  |     (O) [AMP TUBE: OK]    |
+|    |  ${s.spkLeft.padEnd(8)} |   |  ${s.spkRight.padEnd(8)} |    /!\\ ${s.title.padEnd(20)}|
+|     \\---------/     \\---------/     [MODE: BOLERO READY]   |
++-------------------------------------------------------------+
+</pre>`;
+            }
+
+            // Giao diện đã đổi: Status -> ASCII -> Buttons để loa nằm sát nút bấm nhất
+            printLine(`
+            <div id="${id}" class="my-4 w-full">
+                <p class="text-yellow-400 font-bold glow text-center mb-1">=== MINIGAME: WORKSHOP SỬA CHỮA LOA AMPLY ===</p>
+                <p class="text-xs text-gray-400 text-center mb-3">Sắp xếp các thao tác đúng quy trình. Chọn sai sẽ chập mạch, reset lại từ đầu và ĐỔI VỊ TRÍ nút bấm!</p>
+                
+                <div id="status-message-${id}" class="text-sm my-2 text-cyan-300 italic text-center font-bold">
+                    Trạng thái: ${stepStates[0].status}
+                </div>
+
+                <div id="ascii-container-${id}" class="mb-3">${renderASCII(0)}</div>
+                
+                <div id="action-buttons-${id}" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto">
+                    <!-- Các nút sẽ được render ngẫu nhiên tại đây -->
+                </div>
+            </div>`);
+
+            const container = document.getElementById(id);
+            const asciiBox = document.getElementById(`ascii-container-${id}`);
+            const statusMsg = document.getElementById(`status-message-${id}`);
+            const buttonsBox = document.getElementById(`action-buttons-${id}`);
+
+            // Hàm tạo nút bấm và gắn lại sự kiện click
+            function renderButtons() {
+                const shuffledActions = shuffle([...baseActions]);
+                buttonsBox.innerHTML = shuffledActions.map(act => `
+                    <button data-action="${act.id}" class="btn-repair-act flex items-center justify-center text-center text-xs sm:text-sm p-3 md:p-4 border border-term-dim rounded hover:bg-term-green hover:text-black transition-colors duration-200 active:scale-95 leading-snug">
+                        <i class="fas fa-wrench mr-2 text-term-dim group-hover:text-black shrink-0"></i>
+                        <span>${act.text}</span>
+                    </button>
+                `).join('');
+
+                // Gắn lại sự kiện cho các nút mới
+                buttonsBox.querySelectorAll('.btn-repair-act').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const actId = parseInt(btn.getAttribute('data-action'));
+                        handleActionClick(actId);
+                    });
+                });
+            }
+
+            function handleActionClick(actId) {
+                const expectedActId = correctOrder[currentStepIndex];
+
+                if (actId === expectedActId) {
+                    // Đúng thứ tự!
+                    currentStepIndex++;
+                    asciiBox.innerHTML = renderASCII(currentStepIndex);
+                    statusMsg.innerHTML = `<span class="text-term-green font-bold">[V] CHÍNH XÁC!</span> ${stepStates[currentStepIndex].status}`;
+
+                    // Kiểm tra xem đã hoàn thành toàn bộ chưa
+                    if (currentStepIndex === correctOrder.length) {
+                        statusMsg.innerHTML = `<span class="text-yellow-400 font-bold text-base glow">[🎉 THẮNG TRẬN!] LOA ĐÃ ĐƯỢC SỬA HOÀN HẢO! ĐANG MỞ BẢN NHẠC BOLERO...</span>`;
+                        
+                        // Vô hiệu hóa nút
+                        buttonsBox.querySelectorAll('.btn-repair-act').forEach(btn => btn.disabled = true);
+
+                        // Tự động phát nhạc sau 1.2 giây
+                        setTimeout(() => {
+                            openVideoModal('Music.mp4');
+                        }, 1200);
+                    }
+                } else {
+                    // Chọn sai thứ tự -> RESET GAME & ĐẢO VỊ TRÍ NÚT BẤM!
+                    currentStepIndex = 0;
+                    asciiBox.innerHTML = renderASCII(0);
+                    statusMsg.innerHTML = `<span class="text-red-500 font-bold">[X] SAI QUY TRÌNH! Mạch bị xẹt lửa ⚡. TẤT CẢ VỊ TRÍ ĐÃ BỊ ĐẢO LỘN!</span>`;
+                    
+                    // Hiệu ứng nhấp nháy đỏ cảnh báo
+                    container.classList.add('glitch-mode');
+                    setTimeout(() => container.classList.remove('glitch-mode'), 400);
+                    
+                    // Vẽ lại nút bấm ngẫu nhiên
+                    renderButtons();
+                }
+            }
+
+            // Gọi vẽ nút bấm lần đầu tiên
+            renderButtons();
+            cmdInput.blur();
+        }
         // ---------- LỆNH TỰ HỦY (SELF DESTRUCT) ----------
         async function triggerSelfDestruct() {
             isSelfDestructing = true;
@@ -401,7 +560,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             outputDiv.innerHTML = '';
             mainBody.classList.remove('bg-red-alert');
             terminalContainer.classList.remove('glitch-mode', 'red-alert-text');
-            terminalContainer.style.color = '#00ff41';
+            terminalContainer.style.color = 'var(--term-main)';
             
             printLine("<span class='text-gray-500 italic'>Rebooting interface in recovery mode...</span><br>");
             await new Promise(r => setTimeout(r, 1500));
@@ -409,10 +568,12 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             isSelfDestructing = false;
             cmdInput.disabled = false;
             outputDiv.innerHTML = '';
+            
+            applyTheme(localStorage.getItem('user_theme') || 'matrix');
             bootSequence();
         }
 
-        // ---------- CHATBOT AI (ASKSON) ----------
+        // ---------- CHATBOT AI ----------
         async function processAskSon(question) {
             if (!question) {
                 printLine("<span class='text-term-dim'>[Sơn AI]: Bạn muốn hỏi gì? Cú pháp: <b class='text-white'>askson [câu hỏi của bạn]</b></span>");
@@ -424,7 +585,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             cmdInput.disabled = true;
 
             await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
-            
             document.getElementById(thinkingId).remove();
 
             let answer = "";
@@ -449,7 +609,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 answer = ans[Math.floor(Math.random() * ans.length)];
             } 
             else if (q.includes("bolero") || q.includes("nhạc") || q.includes("hát") || q.includes("sương trắng")) {
-                answer = "Bật 'Sương trắng miền quê ngoại' lên, nhấp ngụm trà đá, và nhìn code chạy Time Limit Exceeded. Đời còn gì bằng!";
+                answer = "Hãy gõ lệnh 'repair' để trổ tài sửa loa, nghe bản nhạc Sương Trắng Miền Quê Ngoại cực đỉnh!";
             } 
             else if (q.includes("chu văn an") || q.includes("cva") || q.includes("trường bưởi") || q.includes("k119")) {
                 answer = "CVA K119 - Nơi hội tụ của những thuật toán sư đỉnh cao";
@@ -464,7 +624,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 answer = "Tôi là Sơn AI - phiên bản kỹ thuật số của Đặng Minh Sơn, nam sinh thanh lịch Chuyên Tin K119.";
             } 
             else if (q.includes("chơi") || q.includes("game") || q.includes("giải trí")) {
-                answer = "Muốn giải trí à? Hãy gõ lệnh 'dino', 'ransanmoi' hoặc 'flappybird' để thử sức nhé!";
+                answer = "Muốn giải trí à? Hãy gõ lệnh 'repair', 'dino', 'ransanmoi' hoặc 'flappybird' để thử sức nhé!";
             }
             else if (q.includes("ngu") || q.includes("dốt") || q.includes("chửi")) {
                 answer = "Hơi nóng nảy rồi đấy. AI Sơn tuy thân thiện nhưng có thể cấp vé block miễn phí nhé 🛑";
@@ -480,21 +640,20 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 answer = ans[Math.floor(Math.random() * ans.length)];
             }
 
-            printLine(`<span class="text-cyan-400 font-bold glow">[Sơn AI]:</span> <span class="text-white">${answer}</span>`);
+            printLine(`<span class="text-term-green font-bold glow">[Sơn AI]:</span> <span class="text-white">${answer}</span>`);
             cmdInput.disabled = false;
             cmdInput.focus();
         }
 
-        // ---------- GAME 1: KHỦNG LONG VƯỢT RÀO (DINO RUN) ----------
+        // ---------- GAME 1: KHỦNG LONG VƯỢT RÀO ----------
         function startDino() {
             stopCurrentGame();
             const id = 'dino-' + Date.now();
             printLine(`
             <div class="flex flex-col items-center my-4 w-full">
                 <p class="text-yellow-400 mb-2 glow">DINO_RUN.EXE</p>
-                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md bg-[#111] cursor-pointer shadow-[0_0_15px_rgba(0,143,17,0.5)] block"></canvas>
+                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)] block" style="background-color: var(--term-bg)"></canvas>
                 
-                <!-- Nút nhảy hỗ trợ màn hình cảm ứng điện thoại -->
                 <button id="btn-jump-${id}" class="mt-3 bg-term-dim text-black font-bold px-8 py-3 rounded active:bg-term-green md:hidden shadow-md">
                     JUMP (NHẢY) ▲
                 </button>
@@ -507,23 +666,13 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
             let dino, obstacles, score, gameover, frame, gameStarted;
             const groundY = 240;
+            const gmColor = currentActiveTheme.main;
+            const gmDim = currentActiveTheme.dim;
+            const gmBg = currentActiveTheme.bg;
 
             function initGame() {
-                dino = {
-                    x: 40,
-                    y: groundY - 30,
-                    width: 20,
-                    height: 30,
-                    vy: 0,
-                    gravity: 0.65,
-                    jumpForce: -11,
-                    isGrounded: true
-                };
-                obstacles = [];
-                score = 0;
-                gameover = false;
-                frame = 0;
-                gameStarted = false;
+                dino = { x: 40, y: groundY - 30, width: 20, height: 30, vy: 0, gravity: 0.65, jumpForce: -11, isGrounded: true };
+                obstacles = []; score = 0; gameover = false; frame = 0; gameStarted = false;
             }
 
             initGame();
@@ -536,7 +685,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     ctx.font = "bold 20px 'Fira Code'";
                     ctx.textAlign = "center";
                     ctx.fillText("GAME OVER!", 150, 130);
-                    ctx.fillStyle = "#00ff41";
+                    ctx.fillStyle = gmColor;
                     ctx.fillText("Score: " + score, 150, 160);
                     ctx.fillStyle = "white";
                     ctx.font = "14px 'Fira Code'";
@@ -546,12 +695,10 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
                 currentGameAnimationId = requestAnimationFrame(draw);
 
-                // Nền game
-                ctx.fillStyle = "#111";
+                ctx.fillStyle = gmBg;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Vẽ Mặt đất
-                ctx.strokeStyle = "#008f11";
+                ctx.strokeStyle = gmDim;
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.moveTo(0, groundY);
@@ -563,16 +710,13 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     ctx.font = "16px 'Fira Code'";
                     ctx.textAlign = "center";
                     ctx.fillText("Tap / Space to Start", 150, 140);
-
-                    // Vẽ Khủng long ban đầu
-                    ctx.fillStyle = "#00ff41";
+                    ctx.fillStyle = gmColor;
                     ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
-                    ctx.fillStyle = "#000";
+                    ctx.fillStyle = (gmBg === '#ffffff' || gmBg === '#fdf6e3') ? "#000" : (gmColor === '#ffffff' ? '#000' : gmBg);
                     ctx.fillRect(dino.x + 12, dino.y + 4, 4, 4);
                     return;
                 }
 
-                // Trọng lực khủng long
                 dino.vy += dino.gravity;
                 dino.y += dino.vy;
 
@@ -582,59 +726,39 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     dino.isGrounded = true;
                 }
 
-                // Sinh chướng ngại vật (Xương hoại / Xương rồng)
                 frame++;
                 let spawnInterval = Math.max(45, 90 - Math.floor(score / 4));
                 if (frame % spawnInterval === 0) {
                     let obsHeight = Math.floor(Math.random() * 20) + 20; 
                     let obsWidth = Math.floor(Math.random() * 10) + 14;  
-                    obstacles.push({
-                        x: canvas.width,
-                        y: groundY - obsHeight,
-                        width: obsWidth,
-                        height: obsHeight,
-                        passed: false
-                    });
+                    obstacles.push({ x: canvas.width, y: groundY - obsHeight, width: obsWidth, height: obsHeight, passed: false });
                 }
 
-                // Di chuyển & vẽ chướng ngại vật
                 let speed = 3.5 + Math.min(score * 0.1, 5);
                 ctx.fillStyle = "#ff003c";
                 for (let i = 0; i < obstacles.length; i++) {
                     let obs = obstacles[i];
                     obs.x -= speed;
-
                     ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
 
-                    // Kiểm tra va chạm (AABB Collision)
-                    if (
-                        dino.x < obs.x + obs.width &&
-                        dino.x + dino.width > obs.x &&
-                        dino.y < obs.y + obs.height &&
-                        dino.y + dino.height > obs.y
-                    ) {
+                    if ( dino.x < obs.x + obs.width && dino.x + dino.width > obs.x &&
+                         dino.y < obs.y + obs.height && dino.y + dino.height > obs.y ) {
                         gameover = true;
                     }
 
-                    // Tính điểm
                     if (obs.x + obs.width < dino.x && !obs.passed) {
-                        score++;
-                        obs.passed = true;
+                        score++; obs.passed = true;
                     }
                 }
 
-                // Lọc vật cản ra khỏi màn hình
                 obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
 
-                // Vẽ Khủng long
-                ctx.fillStyle = "#00ff41";
+                ctx.fillStyle = gmColor;
                 ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
-                // Mắt
-                ctx.fillStyle = "#000";
+                ctx.fillStyle = (gmBg === '#ffffff' || gmBg === '#fdf6e3') ? "#000" : (gmColor === '#ffffff' ? '#000' : gmBg);
                 ctx.fillRect(dino.x + 12, dino.y + 4, 4, 4);
 
-                // Tính năng điểm số
-                ctx.fillStyle = "#00ff41";
+                ctx.fillStyle = gmColor;
                 ctx.font = "bold 14px 'Fira Code'";
                 ctx.textAlign = "left";
                 ctx.fillText("Score: " + score, 10, 25);
@@ -644,13 +768,9 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 if (e) e.preventDefault();
                 if (gameover) {
                     if (currentGameAnimationId) cancelAnimationFrame(currentGameAnimationId);
-                    initGame();
-                    draw();
-                    return;
+                    initGame(); draw(); return;
                 }
-                if (!gameStarted) {
-                    gameStarted = true;
-                }
+                if (!gameStarted) gameStarted = true;
                 if (dino.isGrounded) {
                     dino.vy = dino.jumpForce;
                     dino.isGrounded = false;
@@ -659,24 +779,16 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
             canvas.addEventListener('mousedown', doJump);
             canvas.addEventListener('touchstart', doJump, { passive: false });
-
-            const btnJump = document.getElementById(`btn-jump-${id}`);
-            if (btnJump) {
-                btnJump.onclick = doJump;
-            }
+            if (document.getElementById(`btn-jump-${id}`)) document.getElementById(`btn-jump-${id}`).onclick = doJump;
 
             const keyHandler = (e) => {
                 if (document.activeElement === cmdInput) return;
-                if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
-                    doJump(e);
-                }
+                if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') doJump(e);
             };
 
             window.currentGameKeyHandler = keyHandler;
             window.addEventListener('keydown', window.currentGameKeyHandler, { passive: false });
-
-            draw();
-            cmdInput.blur();
+            draw(); cmdInput.blur();
         }
 
         // ---------- GAME 2: RẮN SĂN MỒI ----------
@@ -686,7 +798,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             printLine(`
             <div class="flex flex-col items-center my-4 w-full">
                 <p class="text-yellow-400 mb-2 glow">RANSANMOI.EXE</p>
-                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md bg-[#111] cursor-pointer shadow-[0_0_15px_rgba(0,143,17,0.5)]"></canvas>
+                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)]" style="background-color: var(--term-bg)"></canvas>
                 
                 <div class="grid grid-cols-3 gap-2 mt-4 md:hidden">
                     <div></div>
@@ -704,17 +816,15 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             const tileSize = 15;
             const tileCount = 20;
 
+            const gmColor = currentActiveTheme.main;
+            const gmBg = currentActiveTheme.bg;
+
             let snake, food, dx, dy, score, gameover;
 
             function initGame() {
-                snake = [{x: 10, y: 10}];
-                food = {x: 5, y: 5};
-                dx = 0; 
-                dy = -1;
-                score = 0;
-                gameover = false;
+                snake = [{x: 10, y: 10}]; food = {x: 5, y: 5};
+                dx = 0; dy = -1; score = 0; gameover = false;
             }
-
             initGame();
 
             function draw() {
@@ -725,7 +835,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     ctx.font = "bold 20px 'Fira Code'";
                     ctx.textAlign = "center";
                     ctx.fillText("GAME OVER!", 150, 130);
-                    ctx.fillStyle = "#00ff41";
+                    ctx.fillStyle = gmColor;
                     ctx.fillText("Score: " + score, 150, 160);
                     ctx.fillStyle = "white";
                     ctx.font = "14px 'Fira Code'";
@@ -739,9 +849,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
                 let head = {x: snake[0].x + dx, y: snake[0].y + dy};
 
-                if(head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-                    gameover = true;
-                }
+                if(head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) gameover = true;
                 for(let i=0; i<snake.length; i++) {
                     if(head.x === snake[i].x && head.y === snake[i].y) gameover = true;
                 }
@@ -751,24 +859,21 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     if(head.x === food.x && head.y === food.y) {
                         score++;
                         food = {x: Math.floor(Math.random()*tileCount), y: Math.floor(Math.random()*tileCount)};
-                    } else {
-                        snake.pop();
-                    }
+                    } else { snake.pop(); }
                 }
 
-                ctx.fillStyle = "#111";
+                ctx.fillStyle = gmBg;
                 ctx.fillRect(0,0, canvas.width, canvas.height);
                 
                 ctx.fillStyle = "red";
                 ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize - 1, tileSize - 1);
                 
-                ctx.fillStyle = "#00ff41";
                 for(let i=0; i<snake.length; i++) {
-                    ctx.fillStyle = i === 0 ? "#ffffff" : "#00ff41"; 
+                    ctx.fillStyle = i === 0 ? "#ffffff" : gmColor; 
                     ctx.fillRect(snake[i].x * tileSize, snake[i].y * tileSize, tileSize - 1, tileSize - 1);
                 }
                 
-                ctx.fillStyle = "rgba(0, 255, 65, 0.5)";
+                ctx.fillStyle = currentActiveTheme.glow;
                 ctx.font = "14px 'Fira Code'";
                 ctx.textAlign = "left";
                 ctx.fillText("Score: " + score, 10, 20);
@@ -778,8 +883,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 if(e) e.preventDefault();
                 if(gameover) {
                     if (currentGameTimeoutId) clearTimeout(currentGameTimeoutId);
-                    initGame();
-                    draw();
+                    initGame(); draw();
                 }
             }
 
@@ -801,16 +905,14 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             window.currentGameKeyHandler = keyHandler;
             window.addEventListener('keydown', window.currentGameKeyHandler, {passive: false});
 
-            const btnUp = document.getElementById(`btn-up-${id}`);
-            if(btnUp) {
-                btnUp.onclick = () => { if(dy !== 1) { dx = 0; dy = -1; } };
+            if(document.getElementById(`btn-up-${id}`)) {
+                document.getElementById(`btn-up-${id}`).onclick = () => { if(dy !== 1) { dx = 0; dy = -1; } };
                 document.getElementById(`btn-down-${id}`).onclick = () => { if(dy !== -1) { dx = 0; dy = 1; } };
                 document.getElementById(`btn-left-${id}`).onclick = () => { if(dx !== 1) { dx = -1; dy = 0; } };
                 document.getElementById(`btn-right-${id}`).onclick = () => { if(dx !== -1) { dx = 1; dy = 0; } };
             }
 
-            draw();
-            cmdInput.blur(); 
+            draw(); cmdInput.blur(); 
         }
 
         // ---------- GAME 3: FLAPPY BIRD ----------
@@ -820,7 +922,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             printLine(`
             <div class="flex flex-col items-center my-4 w-full">
                 <p class="text-yellow-400 mb-2 glow">FLAPPYBIRD.EXE</p>
-                <canvas id="${id}" width="300" height="400" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_rgba(0,143,17,0.5)] block bg-[#70c5ce]"></canvas>
+                <canvas id="${id}" width="300" height="400" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)] block bg-[#70c5ce]"></canvas>
                 <p class="text-xs text-gray-500 mt-2 text-center">PC: Nhấn phím <b>Space</b> hoặc Click chuột | Mobile: Chạm vào vùng Game</p>
             </div>`);
 
@@ -831,13 +933,8 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
             function initGame() {
                 bird = {x: 50, y: 150, width: 20, height: 20, velocity: 0, gravity: 0.5, jump: -7};
-                pipes = [];
-                score = 0;
-                gameover = false;
-                frame = 0;
-                gameStarted = false;
+                pipes = []; score = 0; gameover = false; frame = 0; gameStarted = false;
             }
-
             initGame();
 
             function draw() {
@@ -889,13 +986,8 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     ctx.fillRect(p.x, p.y + p.gap, p.width, canvas.height - p.y - p.gap);
 
                     if(bird.x < p.x + p.width && bird.x + bird.width > p.x &&
-                      (bird.y < p.y || bird.y + bird.height > p.y + p.gap)) {
-                          gameover = true;
-                    }
-                    if(p.x + p.width < bird.x && !p.passed) {
-                        score++;
-                        p.passed = true;
-                    }
+                      (bird.y < p.y || bird.y + bird.height > p.y + p.gap)) gameover = true;
+                    if(p.x + p.width < bird.x && !p.passed) { score++; p.passed = true; }
                 }
                 pipes = pipes.filter(p => p.x + p.width > 0); 
 
@@ -913,9 +1005,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 if(e) e.preventDefault();
                 if(gameover) {
                     if (currentGameAnimationId) cancelAnimationFrame(currentGameAnimationId);
-                    initGame();
-                    draw();
-                    return;
+                    initGame(); draw(); return;
                 }
                 if(!gameStarted) gameStarted = true;
                 bird.velocity = bird.jump;
@@ -931,8 +1021,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             window.currentGameKeyHandler = keyHandler;
             window.addEventListener('keydown', window.currentGameKeyHandler, {passive: false});
 
-            draw();
-            cmdInput.blur(); 
+            draw(); cmdInput.blur(); 
         }
 
         // ---------- CODE HACKER MATRIX ----------
@@ -945,23 +1034,18 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             let num = 0;
             function generateNumbers() {
                 let chunk = '';
-                for(let i = 0; i < 30; i++) {
-                    chunk += (num++) + " ";
-                }
+                for(let i = 0; i < 30; i++) { chunk += (num++) + " "; }
                 
                 const div = document.createElement('div');
                 div.className = "text-term-dim break-all text-justify font-mono";
                 div.textContent = chunk;
                 outputDiv.appendChild(div);
                 
-                while (outputDiv.childElementCount > 60) {
-                    outputDiv.removeChild(outputDiv.firstElementChild);
-                }
+                while (outputDiv.childElementCount > 60) { outputDiv.removeChild(outputDiv.firstElementChild); }
                 
                 scrollToBottom();
                 currentGameAnimationId = requestAnimationFrame(generateNumbers);
             }
-            
             generateNumbers();
         }
 
@@ -981,16 +1065,12 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 element.innerHTML += "<br>";
                 const typingInterval = setInterval(() => {
                     if (i < text.length) {
-                        if (text.charAt(i) === '\n') {
-                            element.innerHTML += "<br>";
-                        } else {
-                            element.innerHTML += text.charAt(i);
-                        }
+                        if (text.charAt(i) === '\n') element.innerHTML += "<br>";
+                        else element.innerHTML += text.charAt(i);
                         scrollToBottom();
                         i++;
                     } else {
-                        clearInterval(typingInterval);
-                        resolve();
+                        clearInterval(typingInterval); resolve();
                     }
                 }, speed);
             });
@@ -1010,42 +1090,65 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
             // Tự hủy
             if (cmdLower === 'sudo rm -rf /' || cmdLower === 'sudo' || cmdLower === 'destroy' || cmdLower === 'rm -rf /') {
-                triggerSelfDestruct();
+                triggerSelfDestruct(); return;
+            }
+
+            // GIAO DIỆN (THEMES)
+            if (cmdLower === 'theme' || cmdLower === 'themes') {
+                printLine(`
+[+] HỆ THỐNG GIAO DIỆN (THEMES):
+Cú pháp: <b class="text-white">theme [tên_theme]</b>
+Danh sách các theme hiện có:
+  1. <b style="color: #00ff41">matrix</b> - Xanh lục Hacker (Mặc định)
+  2. <b style="color: #ff3333">blood</b>  - Đỏ rực bí ẩn
+  3. <b style="color: #00ffff">cyber</b>  - Xanh lơ Cyberpunk
+  4. <b style="color: #ffffff">ubuntu</b> - Phong cách Ubuntu (Tím/Cam)
+  5. <b style="color: #82aaff">ocean</b>  - Xanh đáy biển sâu
+  6. <b style="color: #ffd700">gold</b>   - Vàng Hoàng Gia Retro
+`);
+                return;
+            }
+            if (cmdLower.startsWith('theme ')) {
+                const requestedTheme = cmdLower.split(' ')[1];
+                if (applyTheme(requestedTheme)) {
+                    printLine(`<span class='text-term-green glow'>[OK] Đã chuyển đổi sang giao diện: ${themeConfig[requestedTheme].name}</span>`);
+                } else {
+                    printLine(`<span class='text-red-500'>[Lỗi] Không tìm thấy theme '${requestedTheme}'. Gõ 'theme' để xem danh sách.</span>`);
+                }
                 return;
             }
 
             // Chat AI
             if (cmdLower.startsWith('askson')) {
                 const question = rawCmd.substring(6).trim();
-                processAskSon(question);
+                processAskSon(question); return;
+            }
+
+            // MINIGAME SỬA LOA (REPAIR)
+            if (cmdLower === 'repair' || cmdLower === 'sualoa' || cmdLower === 'suado') {
+                startRepairGame();
                 return;
             }
 
-            // Lệnh Game mới: Khủng long
-            if (cmdLower === 'dino' || cmdLower === 'khunglong') {
-                startDino();
+            // LỆNH MUSIC ĐÃ CẬP NHẬT THEO YÊU CẦU MỚI
+            if (cmdLower === 'music') {
+                printLine("<span class='text-yellow-400 font-bold'>[!] LOA ĐÀI ĐANG BỊ HỎNG!</span> Không thể phát nhạc ngay lúc này.");
+                printLine("Vui lòng gõ lệnh <b class='text-white glow'>repair</b> để trổ tài sửa chữa Loa Amply. Khi sửa thành công, nhạc Bolero sẽ tự động vang lên!");
                 return;
             }
 
-            // Các game khác
+            // Games khác
+            if (cmdLower === 'dino' || cmdLower === 'khunglong') { startDino(); return; }
             if (cmdLower === 'code') { startCodeSequence(); return; }
             if (cmdLower === 'ransanmoi') { startSnake(); return; }
             if (cmdLower === 'flappybird') { startFlappy(); return; }
 
-            // Lệnh Music mới thêm
-            if (cmdLower === 'music') {
-                printLine("<span class='text-term-dim'>[System] Đang mở trình phát nhạc: Sương trắng miền quê ngoại - Quang Lê...</span>");
-                openVideoModal('Music.mp4');
-                return;
-            }
-
-            // Lệnh người yêu
+            // Easter Egg
             if (cmdLower === 'người yêu' || cmdLower === 'ny') {
-                printLine('<span class="text-red-500 glow text-lg font-bold">Error 404: Not Found 💔. Thử dùng lệnh: askson có người yêu chưa?</span>');
-                return;
+                printLine('<span class="text-red-500 glow text-lg font-bold">Error 404: Not Found 💔. Thử dùng lệnh: askson có người yêu chưa?</span>'); return;
             }
 
-            // Các lệnh thông thường trong Database
+            // Commands thông thường
             if (commands[cmdLower]) {
                 printLine(commands[cmdLower]);
             } else {
@@ -1081,8 +1184,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             }
         });
 
-        // Hỗ trợ giữ focus vào ô lệnh khi bấm ra vùng trắng, 
-        // TRỪ KHI đang thao tác với các thành phần đặc biệt (Ảnh, Video, Canvas, Nút...)
         terminalContainer.addEventListener('click', (e) => {
             if (
                 !isSelfDestructing && 
