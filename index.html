@@ -233,7 +233,6 @@ AVAILABLE COMMANDS:
   <span class="glow text-white">dino</span>        - Chơi game Khủng long vượt rào (Dino Run)
   <span class="glow text-white">ransanmoi</span>   - Chơi game Rắn săn mồi
   <span class="glow text-white">flappybird</span>  - Chơi game Flappy Bird
-  <span class="glow text-yellow-400">ide</span>        - Mở trình biên dịch C++ trực tuyến
   <span class="glow text-white">code</span>        - Khởi động chuỗi số liệu tăng dần (Hacker mode)
   <span class="glow text-white">music</span>       - Thưởng thức Bolero: Sương trắng miền quê ngoại
   <span class="glow text-white">sudo</span>        - Yêu cầu quyền Admin
@@ -936,91 +935,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             cmdInput.blur(); 
         }
 
-        // ---------- C++ IDE (PISTON API) ----------
-        function startCppIDE() {
-            stopCurrentGame(); // Dừng mọi thứ khác
-            const id = 'cpp-' + Date.now();
-            
-            // In ra giao diện IDE
-            printLine(`
-            <div class="flex flex-col my-4 w-full border border-term-dim p-4 bg-[#0a0a0a] rounded shadow-[0_0_15px_rgba(0,143,17,0.3)]">
-                <div class="flex justify-between items-center mb-2">
-                    <p class="text-yellow-400 glow font-bold">C++ COMPILER (Powered by Piston)</p>
-                    <span class="text-xs text-term-dim">GCC 10.2.0</span>
-                </div>
-                
-                <!-- Ô nhập code -->
-                <textarea id="code-${id}" rows="10" spellcheck="false" class="w-full bg-[#111] text-[#00ff41] p-3 font-mono text-sm md:text-base border border-term-dim rounded focus:border-[#00ff41] focus:outline-none resize-y transition-colors selection:bg-[#008f11] selection:text-white">
-#include <iostream>
-using namespace std;
-
-int main() {
-    cout << "Hello CVA K119!" << endl;
-    return 0;
-}</textarea>
-                
-                <!-- Nút chạy code -->
-                <button id="btn-run-${id}" class="mt-3 bg-term-dim text-black font-bold px-6 py-2 rounded hover:bg-term-green transition-colors w-max shadow-[0_0_10px_rgba(0,143,17,0.5)]">
-                    <i class="fas fa-play mr-2"></i> RUN CODE
-                </button>
-                
-                <!-- Khu vực hiển thị kết quả -->
-                <div class="mt-4 p-3 bg-black border border-gray-700 rounded min-h-[80px]">
-                    <p class="text-gray-500 text-xs mb-2 border-b border-gray-800 pb-1">TERMINAL OUTPUT:</p>
-                    <pre id="output-${id}" class="text-white whitespace-pre-wrap font-mono text-sm break-words"></pre>
-                </div>
-            </div>`);
-
-            // Xử lý logic gọi API
-            const btnRun = document.getElementById(`btn-run-${id}`);
-            const codeInput = document.getElementById(`code-${id}`);
-            const outputBox = document.getElementById(`output-${id}`);
-
-            btnRun.addEventListener('click', async () => {
-                const code = codeInput.value;
-                btnRun.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> COMPILING...';
-                btnRun.disabled = true;
-                btnRun.classList.replace('bg-term-dim', 'bg-gray-600');
-                outputBox.innerHTML = '<span class="text-term-dim animate-pulse">Đang gửi mã nguồn tới máy chủ biên dịch...</span>';
-
-                try {
-                    // Gọi Piston API
-                    const response = await fetch("https://emkc.org/api/v2/piston/execute", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            language: "c++",
-                            version: "10.2.0",
-                            files: [{ content: code }]
-                        })
-                    });
-
-                    const data = await response.json();
-                    
-                    // Lọc kết quả trả về
-                    if (data.run && data.run.output) {
-                        // In kết quả thành công (màu trắng) hoặc lỗi runtime
-                        outputBox.innerHTML = `<span class="${data.run.code !== 0 ? 'text-red-400' : 'text-white'}">${data.run.output.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>`;
-                    } else if (data.compile && data.compile.output) {
-                        // In lỗi biên dịch (màu đỏ)
-                        outputBox.innerHTML = `<span class="text-red-500 font-bold">Compile Error:</span>\n<span class="text-red-400">${data.compile.output.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>`;
-                    } else {
-                        outputBox.innerHTML = '<span class="text-yellow-400">Chương trình chạy thành công nhưng không có output.</span>';
-                    }
-                } catch (error) {
-                    outputBox.innerHTML = `<span class="text-red-500">Lỗi kết nối tới máy chủ Piston API: ${error.message}</span>`;
-                } finally {
-                    // Phục hồi nút bấm
-                    btnRun.innerHTML = '<i class="fas fa-play mr-2"></i> RUN CODE';
-                    btnRun.disabled = false;
-                    btnRun.classList.replace('bg-gray-600', 'bg-term-dim');
-                }
-            });
-
-            // Focus khỏi dòng lệnh chính để người dùng gõ code
-            cmdInput.blur();
-        }
-
         // ---------- CODE HACKER MATRIX ----------
         function startCodeSequence() {
             stopCurrentGame(); 
@@ -1118,12 +1032,6 @@ int main() {
             if (cmdLower === 'ransanmoi') { startSnake(); return; }
             if (cmdLower === 'flappybird') { startFlappy(); return; }
 
-            // Lập trình C++
-            if (cmdLower === 'ide' || cmdLower === 'cpp-run' || cmdLower === 'compiler') { 
-                startCppIDE(); 
-                return; 
-            }
-            
             // Lệnh Music mới thêm
             if (cmdLower === 'music') {
                 printLine("<span class='text-term-dim'>[System] Đang mở trình phát nhạc: Sương trắng miền quê ngoại - Quang Lê...</span>");
@@ -1178,7 +1086,6 @@ int main() {
         terminalContainer.addEventListener('click', (e) => {
             if (
                 !isSelfDestructing && 
-                e.target.tagName !== 'TEXTAREA' &&
                 e.target.tagName !== 'CANVAS' && 
                 e.target.tagName !== 'BUTTON' && 
                 e.target.tagName !== 'IMG' && 
