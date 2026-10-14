@@ -203,20 +203,47 @@
             'cyber':  { name: 'Cyberpunk', bg: '#0b0c10', main: '#00ffff', dim: '#8c00ff', glow: 'rgba(0, 255, 255, 0.5)' },
             'ubuntu': { name: 'Ubuntu Retro', bg: '#300a24', main: '#ffffff', dim: '#e95420', glow: 'rgba(255, 255, 255, 0.3)' },
             'ocean':  { name: 'Deep Ocean', bg: '#011627', main: '#82aaff', dim: '#3a7bd5', glow: 'rgba(130, 170, 255, 0.5)' },
-            'gold':   { name: 'Golden Royal', bg: '#1a1a1a', main: '#ffd700', dim: '#b8860b', glow: 'rgba(255, 215, 0, 0.5)' }
+            'gold':   { name: 'Golden Royal', bg: '#1a1a1a', main: '#ffd700', dim: '#b8860b', glow: 'rgba(255, 215, 0, 0.5)' },
+            'rgb':    { name: 'Gaming RGB Rainbow', bg: 'dynamic', main: 'dynamic', dim: 'dynamic', glow: 'dynamic' }
         };
 
         let currentActiveTheme = themeConfig['matrix'];
+        let rgbAnimId = null;
 
         function applyTheme(themeKey) {
+            // Hủy animation RGB cũ nếu có khi đổi sang theme khác
+            if (rgbAnimId) {
+                cancelAnimationFrame(rgbAnimId);
+                rgbAnimId = null;
+            }
+
             if (!themeConfig[themeKey]) return false;
             const t = themeConfig[themeKey];
             currentActiveTheme = t;
             
-            document.documentElement.style.setProperty('--term-bg', t.bg);
-            document.documentElement.style.setProperty('--term-main', t.main);
-            document.documentElement.style.setProperty('--term-dim', t.dim);
-            document.documentElement.style.setProperty('--term-glow', t.glow);
+            if (themeKey === 'rgb') {
+                let hue = 0;
+                function updateRgb() {
+                    const bgCol = `hsl(${hue}, 100%, 5%)`;
+                    const mainCol = `hsl(${hue}, 100%, 55%)`;
+                    const dimCol = `hsl(${hue}, 80%, 30%)`;
+                    const glowCol = `hsla(${hue}, 100%, 50%, 0.6)`;
+
+                    document.documentElement.style.setProperty('--term-bg', bgCol);
+                    document.documentElement.style.setProperty('--term-main', mainCol);
+                    document.documentElement.style.setProperty('--term-dim', dimCol);
+                    document.documentElement.style.setProperty('--term-glow', glowCol);
+
+                    hue = (hue + 1) % 360;
+                    rgbAnimId = requestAnimationFrame(updateRgb);
+                }
+                updateRgb();
+            } else {
+                document.documentElement.style.setProperty('--term-bg', t.bg);
+                document.documentElement.style.setProperty('--term-main', t.main);
+                document.documentElement.style.setProperty('--term-dim', t.dim);
+                document.documentElement.style.setProperty('--term-glow', t.glow);
+            }
             
             localStorage.setItem('user_theme', themeKey);
             return true;
@@ -260,7 +287,7 @@ AVAILABLE COMMANDS:
   
   [+] CHUYÊN MỤC GIẢI TRÍ & GIAO DIỆN:
   <span class="glow text-cyan-400">askson [câu hỏi]</span> - Chat trực tiếp với AI giả lập của Sơn
-  <span class="glow text-term-green">theme</span>       - Xem và đổi giao diện hiển thị (6 Themes)
+  <span class="glow text-term-green">theme</span>       - Xem và đổi giao diện hiển thị (7 Themes)
   <span class="glow text-white">repair</span>      - Minigame sửa chữa Loa Amply bị hỏng
   <span class="glow text-white">dino</span>        - Chơi game Khủng long vượt rào
   <span class="glow text-white">ransanmoi</span>   - Chơi game Rắn săn mồi
@@ -393,11 +420,9 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             stopCurrentGame();
             const id = 'repair-' + Date.now();
 
-            // Thứ tự các bước chuẩn xác: 1 -> 2 -> 3 -> 4 -> 6 (5 là bẫy)
             const correctOrder = [1, 2, 3, 4, 6];
-            let currentStepIndex = 0; // Đang ở bước nào trong quy trình
+            let currentStepIndex = 0;
 
-            // Mô tả trạng thái tương ứng với từng bước
             const stepStates = [
                 { title: "MỨC 0/5: Bắt đầu kiểm tra", status: "Cháy tụ, đứt dây, bám bụi bẩn, chưa tháo vỏ.", spkLeft: "BROKEN", spkRight: "BROKEN", ampStatus: "OFF (CHẬP MẠCH)" },
                 { title: "MỨC 1/5: Đã tháo nắp bảo vệ", status: "Mở khung vỏ thành công, lộ rõ bảng mạch bên trong.", spkLeft: "EXPOSED", spkRight: "EXPOSED", ampStatus: "DISCONNECTED" },
@@ -407,7 +432,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 { title: "MỨC 5/5: Lắp vỏ & Bật nguồn thành công!", status: "LOA ĐÃ SỬA XONG! SẴN SÀNG PHÁT NHẠC BOLERO!", spkLeft: "PLAYING", spkRight: "PLAYING", ampStatus: "POWER ON 100%" }
             ];
 
-            // Đã bỏ đánh số thứ tự và bỏ nhắc (Bẫy) để tăng độ khó
             const baseActions = [
                 { id: 1, text: "Tháo ốc vít & mở nắp vỏ loa" },
                 { id: 2, text: "Dùng cọ quét sạch bụi bẩn bên trong" },
@@ -417,7 +441,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 { id: 6, text: "Lắp vỏ bảo vệ & Bật công tắc Nguồn" }
             ];
 
-            // Hàm đảo lộn ngẫu nhiên mảng
             function shuffle(array) {
                 let currentIndex = array.length, randomIndex;
                 while (currentIndex != 0) {
@@ -445,7 +468,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 </pre>`;
             }
 
-            // Giao diện đã đổi: Status -> ASCII -> Buttons để loa nằm sát nút bấm nhất
             printLine(`
             <div id="${id}" class="my-4 w-full">
                 <p class="text-yellow-400 font-bold glow text-center mb-1">=== MINIGAME: WORKSHOP SỬA CHỮA LOA AMPLY ===</p>
@@ -457,9 +479,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
                 <div id="ascii-container-${id}" class="mb-3">${renderASCII(0)}</div>
                 
-                <div id="action-buttons-${id}" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto">
-                    <!-- Các nút sẽ được render ngẫu nhiên tại đây -->
-                </div>
+                <div id="action-buttons-${id}" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto"></div>
             </div>`);
 
             const container = document.getElementById(id);
@@ -467,7 +487,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             const statusMsg = document.getElementById(`status-message-${id}`);
             const buttonsBox = document.getElementById(`action-buttons-${id}`);
 
-            // Hàm tạo nút bấm và gắn lại sự kiện click
             function renderButtons() {
                 const shuffledActions = shuffle([...baseActions]);
                 buttonsBox.innerHTML = shuffledActions.map(act => `
@@ -477,7 +496,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     </button>
                 `).join('');
 
-                // Gắn lại sự kiện cho các nút mới
                 buttonsBox.querySelectorAll('.btn-repair-act').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.preventDefault();
@@ -491,42 +509,34 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                 const expectedActId = correctOrder[currentStepIndex];
 
                 if (actId === expectedActId) {
-                    // Đúng thứ tự!
                     currentStepIndex++;
                     asciiBox.innerHTML = renderASCII(currentStepIndex);
                     statusMsg.innerHTML = `<span class="text-term-green font-bold">[V] CHÍNH XÁC!</span> ${stepStates[currentStepIndex].status}`;
 
-                    // Kiểm tra xem đã hoàn thành toàn bộ chưa
                     if (currentStepIndex === correctOrder.length) {
                         statusMsg.innerHTML = `<span class="text-yellow-400 font-bold text-base glow">[🎉 THẮNG TRẬN!] LOA ĐÃ ĐƯỢC SỬA HOÀN HẢO! ĐANG MỞ BẢN NHẠC BOLERO...</span>`;
-                        
-                        // Vô hiệu hóa nút
                         buttonsBox.querySelectorAll('.btn-repair-act').forEach(btn => btn.disabled = true);
 
-                        // Tự động phát nhạc sau 1.2 giây
                         setTimeout(() => {
                             openVideoModal('Music.mp4');
                         }, 1200);
                     }
                 } else {
-                    // Chọn sai thứ tự -> RESET GAME & ĐẢO VỊ TRÍ NÚT BẤM!
                     currentStepIndex = 0;
                     asciiBox.innerHTML = renderASCII(0);
                     statusMsg.innerHTML = `<span class="text-red-500 font-bold">[X] SAI QUY TRÌNH! Mạch bị xẹt lửa ⚡. TẤT CẢ VỊ TRÍ ĐÃ BỊ ĐẢO LỘN!</span>`;
                     
-                    // Hiệu ứng nhấp nháy đỏ cảnh báo
                     container.classList.add('glitch-mode');
                     setTimeout(() => container.classList.remove('glitch-mode'), 400);
                     
-                    // Vẽ lại nút bấm ngẫu nhiên
                     renderButtons();
                 }
             }
 
-            // Gọi vẽ nút bấm lần đầu tiên
             renderButtons();
             cmdInput.blur();
         }
+
         // ---------- LỆNH TỰ HỦY (SELF DESTRUCT) ----------
         async function triggerSelfDestruct() {
             isSelfDestructing = true;
@@ -664,9 +674,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
             let dino, obstacles, score, gameover, frame, gameStarted;
             const groundY = 240;
-            const gmColor = currentActiveTheme.main;
-            const gmDim = currentActiveTheme.dim;
-            const gmBg = currentActiveTheme.bg;
 
             function initGame() {
                 dino = { x: 40, y: groundY - 30, width: 20, height: 30, vy: 0, gravity: 0.65, jumpForce: -11, isGrounded: true };
@@ -676,6 +683,10 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             initGame();
 
             function draw() {
+                const gmColor = getComputedStyle(document.documentElement).getPropertyValue('--term-main').trim();
+                const gmDim = getComputedStyle(document.documentElement).getPropertyValue('--term-dim').trim();
+                const gmBg = getComputedStyle(document.documentElement).getPropertyValue('--term-bg').trim();
+
                 if (gameover) {
                     ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -710,8 +721,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     ctx.fillText("Tap / Space to Start", 150, 140);
                     ctx.fillStyle = gmColor;
                     ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
-                    ctx.fillStyle = (gmBg === '#ffffff' || gmBg === '#fdf6e3') ? "#000" : (gmColor === '#ffffff' ? '#000' : gmBg);
-                    ctx.fillRect(dino.x + 12, dino.y + 4, 4, 4);
                     return;
                 }
 
@@ -753,8 +762,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 
                 ctx.fillStyle = gmColor;
                 ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
-                ctx.fillStyle = (gmBg === '#ffffff' || gmBg === '#fdf6e3') ? "#000" : (gmColor === '#ffffff' ? '#000' : gmBg);
-                ctx.fillRect(dino.x + 12, dino.y + 4, 4, 4);
 
                 ctx.fillStyle = gmColor;
                 ctx.font = "bold 14px 'Fira Code'";
@@ -814,9 +821,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             const tileSize = 15;
             const tileCount = 20;
 
-            const gmColor = currentActiveTheme.main;
-            const gmBg = currentActiveTheme.bg;
-
             let snake, food, dx, dy, score, gameover;
 
             function initGame() {
@@ -826,6 +830,10 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             initGame();
 
             function draw() {
+                const gmColor = getComputedStyle(document.documentElement).getPropertyValue('--term-main').trim();
+                const gmBg = getComputedStyle(document.documentElement).getPropertyValue('--term-bg').trim();
+                const gmGlow = getComputedStyle(document.documentElement).getPropertyValue('--term-glow').trim();
+
                 if(gameover) {
                     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -871,7 +879,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
                     ctx.fillRect(snake[i].x * tileSize, snake[i].y * tileSize, tileSize - 1, tileSize - 1);
                 }
                 
-                ctx.fillStyle = currentActiveTheme.glow;
+                ctx.fillStyle = gmGlow;
                 ctx.font = "14px 'Fira Code'";
                 ctx.textAlign = "left";
                 ctx.fillText("Score: " + score, 10, 20);
@@ -1080,13 +1088,9 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             
             if (cmdLower === '') return;
 
-            // Xóa màn hình
             if (cmdLower === 'clear') { outputDiv.innerHTML = ''; stopCurrentGame(); return; }
-
-            // Trở về Home 
             if (cmdLower === 'home') { outputDiv.innerHTML = ''; stopCurrentGame(); showWelcomeMessage(); return; }
 
-            // Tự hủy
             if (cmdLower === 'sudo rm -rf /' || cmdLower === 'sudo' || cmdLower === 'destroy' || cmdLower === 'rm -rf /') {
                 triggerSelfDestruct(); return;
             }
@@ -1103,6 +1107,7 @@ Danh sách các theme hiện có:
   4. <b style="color: #ffffff">ubuntu</b> - Phong cách Ubuntu (Tím/Cam)
   5. <b style="color: #82aaff">ocean</b>  - Xanh đáy biển sâu
   6. <b style="color: #ffd700">gold</b>   - Vàng Hoàng Gia Retro
+  7. <b class="glow" style="background: linear-gradient(to right, red, yellow, green, cyan, blue, violet); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">rgb</b>    - Gaming RGB Cầu vồng liên tục (16 triệu màu)
 `);
                 return;
             }
@@ -1128,25 +1133,21 @@ Danh sách các theme hiện có:
                 return;
             }
 
-            // LỆNH MUSIC ĐÃ CẬP NHẬT THEO YÊU CẦU MỚI
             if (cmdLower === 'music') {
                 printLine("<span class='text-yellow-400 font-bold'>[!] LOA ĐÀI ĐANG BỊ HỎNG!</span> Không thể phát nhạc ngay lúc này.");
                 printLine("Vui lòng gõ lệnh <b class='text-white glow'>repair</b> để trổ tài sửa chữa Loa Amply. Khi sửa thành công, nhạc Bolero sẽ tự động vang lên!");
                 return;
             }
 
-            // Games khác
             if (cmdLower === 'dino' || cmdLower === 'khunglong') { startDino(); return; }
             if (cmdLower === 'code') { startCodeSequence(); return; }
             if (cmdLower === 'ransanmoi') { startSnake(); return; }
             if (cmdLower === 'flappybird') { startFlappy(); return; }
 
-            // Easter Egg
             if (cmdLower === 'người yêu' || cmdLower === 'ny') {
                 printLine('<span class="text-red-500 glow text-lg font-bold">Error 404: Not Found 💔. Thử dùng lệnh: askson có người yêu chưa?</span>'); return;
             }
 
-            // Commands thông thường
             if (commands[cmdLower]) {
                 printLine(commands[cmdLower]);
             } else {
