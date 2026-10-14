@@ -52,6 +52,7 @@
             font-family: 'Fira Code', monospace;
             overflow: hidden;
             margin: 0;
+            height: 100vh;
             height: 100dvh;
             display: flex;
             flex-direction: column;
@@ -211,7 +212,6 @@
         let rgbAnimId = null;
 
         function applyTheme(themeKey) {
-            // Hủy animation RGB cũ nếu có khi đổi sang theme khác
             if (rgbAnimId) {
                 cancelAnimationFrame(rgbAnimId);
                 rgbAnimId = null;
@@ -317,7 +317,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 > Danh hiệu: <b>Chuyên Tin K119 THPT chuyên Chu Văn An</b>
 > Slogan: <i>"Trời có thể giăng mây xám, nhưng tim luôn chọn hửng nắng vàng"</i>
 > Bài hát yêu thích: <b>Sương trắng miền quê ngoại</b> - Đinh Miên Vũ
-> Sở thích: Chơi cầu lông, bóng đá, vọc vạch sửa đồ điện & cơ & điện tử..., nghe bolero.
+> Sở thích: Chơi cầu lông, bóng đá, vọc vạch sửa đồ điện & cơ & điện tử, nghe bolero.
 > Sở trường: Cầu lông, sửa đồ điện & cơ & điện tử...
 `,
             'social': `
@@ -329,7 +329,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 `,
             'skills': `
 [+] TECH STACK & SKILLS:
-  - Ngôn ngữ lập trình chủ yếu: <b>C++</b> (Competitive Programming) 
+  - Ngôn ngữ lập trình chủ yếu: <b>C++</b> (Competitive Programming)
   - Chức danh đặc biệt: <b>Bộ trưởng bộ chém gió</b>
   - Kỹ năng phần cứng: Vọc vạch & sửa chữa đồ cơ khí, thiết bị điện tử
   - Kỹ năng giải trí: Chơi cờ vua, cầu lông, bóng đá & cảm thụ Bolero
@@ -464,7 +464,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
 |     /---------\\     /---------\\     [VOLUME KNOB]          |
 |    |  (O) (O)  |   |  (O) (O)  |     (O) [AMP TUBE: OK]    |
 |    |  ${s.spkLeft.padEnd(8)} |   |  ${s.spkRight.padEnd(8)} |    /!\\ ${s.title.padEnd(20)}|
-|     \\---------/     \\---------/     [MODE: READY]          |
+|     \\---------/     \\---------/     [MODE: BOLERO READY]   |
 +-------------------------------------------------------------+
 </pre>`;
             }
@@ -661,7 +661,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             printLine(`
             <div class="flex flex-col items-center my-4 w-full">
                 <p class="text-yellow-400 mb-2 glow">DINO_RUN.EXE</p>
-                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)] block" style="background-color: var(--term-bg)"></canvas>
+                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)] block" style="background-color: var(--term-bg); max-width: 100%; height: auto;"></canvas>
                 
                 <button id="btn-jump-${id}" class="mt-3 bg-term-dim text-black font-bold px-8 py-3 rounded active:bg-term-green md:hidden shadow-md">
                     JUMP (NHẢY) ▲
@@ -804,7 +804,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             printLine(`
             <div class="flex flex-col items-center my-4 w-full">
                 <p class="text-yellow-400 mb-2 glow">RANSANMOI.EXE</p>
-                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)]" style="background-color: var(--term-bg)"></canvas>
+                <canvas id="${id}" width="300" height="300" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)]" style="background-color: var(--term-bg); max-width: 100%; height: auto;"></canvas>
                 
                 <div class="grid grid-cols-3 gap-2 mt-4 md:hidden">
                     <div></div>
@@ -929,7 +929,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
             printLine(`
             <div class="flex flex-col items-center my-4 w-full">
                 <p class="text-yellow-400 mb-2 glow">FLAPPYBIRD.EXE</p>
-                <canvas id="${id}" width="300" height="400" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)] block bg-[#70c5ce]"></canvas>
+                <canvas id="${id}" width="300" height="400" class="border-2 border-term-dim rounded-md cursor-pointer shadow-[0_0_15px_var(--term-glow)] block" style="background-color: #70c5ce; max-width: 100%; height: auto;"></canvas>
                 <p class="text-xs text-gray-500 mt-2 text-center">PC: Nhấn phím <b>Space</b> hoặc Click chuột | Mobile: Chạm vào vùng Game</p>
             </div>`);
 
@@ -1060,7 +1060,7 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
         // CORE SYSTEM 
         // ========================================================
         function showWelcomeMessage() {
-            printLine(`<pre class="glow hidden sm:block text-term-dim leading-none">${asciiArt}</pre>`);
+            printLine(`<pre class="glow text-[6px] sm:text-xs text-term-dim leading-none overflow-x-auto max-w-full">${asciiArt}</pre>`);
             printLine("<span class='text-white font-bold text-lg'>Welcome to Son's Interactive Bio-Terminal.</span>");
             printLine("Type <span class='glow text-white'>'help'</span> to see available commands or use the buttons below.<br>");
             scrollToBottom();
@@ -1069,7 +1069,6 @@ Xin chào! Mình là <b>Đặng Minh Sơn</b>.
         async function typeText(text, element, speed = 20) {
             return new Promise(resolve => {
                 let i = 0;
-                element.innerHTML += "<br>";
                 const typingInterval = setInterval(() => {
                     if (i < text.length) {
                         if (text.charAt(i) === '\n') element.innerHTML += "<br>";
